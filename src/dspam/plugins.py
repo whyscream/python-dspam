@@ -5,6 +5,14 @@ the codebase.
 
 Uses setuptools entry points for registration and discovery of plugins. This allows for easy installation and
 management of plugins, as well as allowing for third-party plugins to be easily added to the system.
+
+Plugins are organized into groups based on their functionality, such as parsers, tokenizers, classifiers, and storage.
+
+Plugin API contract
+-------------------
+
+Each plugin is implemented as a class. The class must have an API_VERSION attribute that specifies the version of the
+plugin API that it implements. This allows for compatibility checks when loading plugins.
 """
 
 import importlib.metadata
@@ -18,6 +26,7 @@ class PluginInfo:
     entry_point_group: str
     package: str
     version: str
+    api_version: str
 
 
 class PluginManager:
@@ -78,10 +87,12 @@ class PluginManager:
                 except importlib.metadata.PackageNotFoundError:
                     module = importlib.import_module(package)
                     version = module.__version__
+                api_version = getattr(plugin_class, "API_VERSION", "0.0")
 
                 yield PluginInfo(
                     name=plugin,
                     entry_point_group=entry_point_group,
                     package=package,
                     version=version,
+                    api_version=api_version,
                 )

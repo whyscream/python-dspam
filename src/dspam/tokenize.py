@@ -1,4 +1,6 @@
 class BaseTokenizer:
+    API_VERSION: str
+
     def __init__(self, content: str, metadata: dict[str, str]) -> None:
         self.content = content
         self.metadata = metadata
@@ -13,6 +15,8 @@ class WordTokenizer(BaseTokenizer):
 
     It removes all punctuation from the input text.
     """
+
+    API_VERSION: str = "1.0"
 
     async def __call__(self, *args, **kwargs) -> list[str]:
         for char in '.,!?;:"()[]{}<>=*/\\':

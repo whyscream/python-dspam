@@ -32,7 +32,9 @@ def get_plugin_manager() -> PluginManager:
 async def default(
     file_path: Annotated[
         Path,
-        Parameter(validator=validate_path, alias="-f", help="Path to the file to process"),
+        Parameter(
+            validator=validate_path, alias="-f", help="Path to the file to process"
+        ),
     ],
 ):
     pm = get_plugin_manager()
@@ -54,9 +56,16 @@ def plugins_list():
     table.add_column("Name")
     table.add_column("Package")
     table.add_column("Version")
+    table.add_column("API version")
 
     for plugin in plugins:
-        table.add_row(plugin.entry_point_group, plugin.name, plugin.package, plugin.version)
+        table.add_row(
+            plugin.entry_point_group,
+            plugin.name,
+            plugin.package,
+            plugin.version,
+            plugin.api_version,
+        )
     console.print(table)
 
 
