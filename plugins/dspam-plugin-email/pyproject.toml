@@ -1,0 +1,20 @@
+[build-system]
+requires = [ "setuptools>=41", "wheel", "setuptools-git-versioning>=3.0,<4", ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
+
+[project]
+name = "dspam-plugin-email"
+description = "Add your description here"
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    { name = "Tom Hendrikx", email = "tom@whyscream.net" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.entry-points."dspam.parser"]
+email = "dspam_plugin_email.parse:EmailParser"

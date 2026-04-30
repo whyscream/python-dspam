@@ -2,12 +2,12 @@ from pathlib import Path
 
 from dspam.classify import DummyClassifier
 from dspam.parse import PlainTextParser
+from dspam.plugins import PluginManager
 from dspam.tokenize import WordTokenizer
 
 
-async def main(file_path: Path):
+async def main(pm: PluginManager, file_path: Path):
     """Process the given file."""
-
     with file_path.open() as f:
         parser = PlainTextParser(f)
         content, metadata = await parser()
