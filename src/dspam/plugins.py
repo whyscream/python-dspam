@@ -34,6 +34,7 @@ class PluginManager:
         "dspam.parser",
         "dspam.tokenizer",
         "dspam.classifier",
+        "dspam.train",
         "dspam.storage",
     ]
 
@@ -52,9 +53,14 @@ class PluginManager:
         parse_module = importlib.import_module("dspam.parse")
         tokenize_module = importlib.import_module("dspam.tokenize")
         classify_module = importlib.import_module("dspam.classify")
+        training_module = importlib.import_module("dspam.train")
+        storage_module = importlib.import_module("dspam.storage")
         self.plugins["dspam.parser"]["plain-text"] = parse_module.PlainTextParser
         self.plugins["dspam.tokenizer"]["word"] = tokenize_module.WordTokenizer
         self.plugins["dspam.classifier"]["dummy"] = classify_module.DummyClassifier
+        self.plugins["dspam.classifier"]["simple"] = classify_module.SimpleClassifier
+        self.plugins["dspam.train"]["simple"] = training_module.SimpleTrainer
+        self.plugins["dspam.storage"]["json"] = storage_module.JSONStorage
 
     def load_plugins(self, entry_point_group: str) -> None:
         """

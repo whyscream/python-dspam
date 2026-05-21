@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from dspam.plugins import PluginManager
-from dspam.main import main
+from dspam.main import classify, train
 
 cli = App(help=__doc__, version=version("python-dspam"))
 
@@ -28,17 +28,34 @@ def get_plugin_manager() -> PluginManager:
     return pm
 
 
-@cli.default
-async def default(
+@cli.command(name="classify", help="Classify a file")
+async def classify_file(
     file_path: Annotated[
         Path,
         Parameter(
-            validator=validate_path, alias="-f", help="Path to the file to process"
+            validator=validate_path, alias="-f", help="Path to the file to classify"
         ),
     ],
 ):
     pm = get_plugin_manager()
-    await main(pm=pm, file_path=file_path)
+    await classify(pm=pm, file_path=file_path)
+
+
+@cli.command(name="train", help="Train the classifier")
+async def train_from_file(
+    file_path: Annotated[
+        Path,
+        Parameter(
+            validator=validate_path, alias="-f", help="Path to the file to train"
+        ),
+    ],
+    classification: Annotated[
+        str | None,
+        Parameter(alias="-c", help="Classification of the file (ham or spam)"),
+    ] = None,
+):
+    pm = get_plugin_manager()
+    await train(pm=pm, file_path=file_path, classification=classification)
 
 
 plugins = App(name="plugins", help="Manage plugins", group="Subcommands")

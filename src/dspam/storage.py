@@ -10,12 +10,20 @@ Additional metadata can be added:
 - token statistics: probablity, ham/spam ratio, etc
 """
 
+import os
+
 import orjson
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 import aiofiles
+
+
+def get_storage_root() -> Path:
+    """Get the root directory for storage files. This is typically a hidden directory in the user's home directory."""
+    xdg_data_home = os.getenv("XDG_DATA_HOME", "~/.local/share")
+    return Path(xdg_data_home).expanduser() / "python-dspam"
 
 
 @dataclass
@@ -47,7 +55,9 @@ class BaseStorage:
 
         This method may keep the data in memory, use persist() to save.
         """
-        ...
+        raise NotImplementedError(
+            "Subclasses must implement the store_spam_token method."
+        )
 
     async def store_ham_token(self, token: str) -> None:
         """
@@ -55,11 +65,17 @@ class BaseStorage:
 
         This method may keep the data in memory, use persist() to save.
         """
-        ...
+        raise NotImplementedError(
+            "Subclasses must implement the store_ham_token method."
+        )
 
     async def persist(self):
         """Persist all unsaved data to the storage backend."""
-        ...
+        raise NotImplementedError("Subclasses must implement the persist method.")
+
+    async def get_token(self, token: str) -> TokenData | None:
+        """Find a token from the storage."""
+        raise NotImplementedError("Subclasses must implement the get_token method.")
 
 
 class JSONStorage(BaseStorage):
@@ -111,3 +127,7 @@ class JSONStorage(BaseStorage):
         token_data = self.data.get(token, TokenData(token=token))
         token_data.add_ham_hit()
         self.data[token] = token_data
+
+    async def get_token(self, token: str) -> TokenData | None:
+        await self.open()
+        return self.data.get(token)

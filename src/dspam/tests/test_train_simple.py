@@ -1,0 +1,28 @@
+import pytest
+
+from dspam import IS_HAM
+from dspam.storage import TokenData
+from dspam.train import SimpleTrainer
+
+
+@pytest.mark.asyncio
+async def test_train_simple_with_classification(storage):
+    """Test that the simple trainer can be called and updates the storage correctly using the classification."""
+    # Simulate token data in storage
+    storage.data = {
+        "token1": TokenData(token="token1", spam_hits=3, ham_hits=1),
+        "token2": TokenData(token="token2", spam_hits=1, ham_hits=1),
+    }
+
+    trainer = SimpleTrainer(
+        tokens=["token1", "token2"], storage=storage, classification=IS_HAM
+    )
+    await trainer()
+
+    token1_data = await storage.get_token("token1")
+    assert token1_data.ham_hits == 2, "token1 should have an additional ham hit"
+    assert token1_data.spam_hits == 3, "token1 should have unchanged spam hit"
+
+    token2_data = await storage.get_token("token2")
+    assert token2_data.ham_hits == 2, "token2 should have an additional ham hit"
+    assert token2_data.spam_hits == 1, "token2 should have unchanged spam hit"
