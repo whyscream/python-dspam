@@ -16,8 +16,12 @@ plugin API that it implements. This allows for compatibility checks when loading
 """
 
 import importlib.metadata
+import logging
 from dataclasses import dataclass
 from collections.abc import Generator
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -70,14 +74,18 @@ class PluginManager:
         self.plugins[self.TRAIN]["simple"] = training_module.SimpleTrainer
         self.plugins[self.STORAGE]["json"] = storage_module.JSONStorage
 
+        plugin_names = [f"{p.group}:{p.name}" for p in self.list_plugins()]
+        logger.info(f"Loaded built-in plugins: {', '.join(plugin_names)}")
+
     def load_entrypoint_plugins(self):
         for entry_point_group, group in self.PLUGIN_ENTRY_POINTS.items():
             for entry_point in importlib.metadata.entry_points(group=entry_point_group):
                 try:
                     plugin_class = entry_point.load()
                     self.plugins[group][entry_point.name] = plugin_class
+                    logger.info(f"Loaded plugin: {group}:{entry_point.name}")
                 except Exception as err:
-                    print(f"Error loading plugin {entry_point.name}: {err}")
+                    print(f"Error loading plugin {group}:{entry_point.name}: {err}")
 
     def list_plugins(self) -> Generator[PluginInfo]:
         """

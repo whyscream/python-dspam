@@ -3,6 +3,7 @@ CLI interface for python DSPAM
 
 """
 
+import logging
 from importlib.metadata import version
 from anyio import Path
 from typing import Annotated
@@ -85,5 +86,12 @@ def plugins_list():
     console.print(table)
 
 
-if __name__ == "__main__":
+def main():
+    logging.basicConfig(
+        level="INFO", format="%(asctime)s %(name)s %(levelname)s: %(message)s"
+    )
     cli()
+
+
+if __name__ == "__main__":
+    main()

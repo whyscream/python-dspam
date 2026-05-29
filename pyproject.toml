@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.entry-points.console_scripts]
-dspam = "dspam.__main__:cli"
+dspam = "dspam.cli:main"
 
 [dependency-groups]
 dev = [
