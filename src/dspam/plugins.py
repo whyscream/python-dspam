@@ -65,8 +65,8 @@ class PluginManager:
         storage_module = importlib.import_module("dspam.storage")
         self.plugins[self.PARSER]["plaintext"] = parse_module.PlainTextParser
         self.plugins[self.TOKENIZER]["word"] = tokenize_module.WordTokenizer
-        self.plugins[self.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
         self.plugins[self.CLASSIFIER]["simple"] = classify_module.SimpleClassifier
+        self.plugins[self.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
         self.plugins[self.TRAIN]["simple"] = training_module.SimpleTrainer
         self.plugins[self.STORAGE]["json"] = storage_module.JSONStorage
 
