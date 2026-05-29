@@ -77,7 +77,7 @@ def plugins_list():
 
     for plugin in plugins:
         table.add_row(
-            plugin.entry_point_group,
+            plugin.group,
             plugin.name,
             plugin.package,
             plugin.version,

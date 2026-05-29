@@ -23,31 +23,39 @@ from collections.abc import Generator
 @dataclass
 class PluginInfo:
     name: str
-    entry_point_group: str
+    group: str
     package: str
     version: str
     api_version: str
 
 
 class PluginManager:
-    PLUGIN_ENTRY_POINTS = [
-        "dspam.parser",
-        "dspam.tokenizer",
-        "dspam.classifier",
-        "dspam.train",
-        "dspam.storage",
+    # Plugin groups
+    PARSER = "parser"
+    TOKENIZER = "tokenizer"
+    CLASSIFIER = "classifier"
+    TRAIN = "train"
+    STORAGE = "storage"
+
+    GROUPS = [
+        PARSER,
+        TOKENIZER,
+        CLASSIFIER,
+        TRAIN,
+        STORAGE,
     ]
 
+    PLUGIN_ENTRY_POINTS = {f"dspam.{group}": group for group in GROUPS}
+
     def __init__(self):
-        self.plugins = {ep: {} for ep in self.PLUGIN_ENTRY_POINTS}
+        self.plugins = {group: {} for group in self.GROUPS}
 
     def load_all_plugins(self):
         """
         Load all plugins from all entry point groups.
         """
         self.load_builtin_plugins()
-        for entry_point_group in self.PLUGIN_ENTRY_POINTS:
-            self.load_plugins(entry_point_group)
+        self.load_entrypoint_plugins()
 
     def load_builtin_plugins(self):
         parse_module = importlib.import_module("dspam.parse")
@@ -55,28 +63,21 @@ class PluginManager:
         classify_module = importlib.import_module("dspam.classify")
         training_module = importlib.import_module("dspam.train")
         storage_module = importlib.import_module("dspam.storage")
-        self.plugins["dspam.parser"]["plain-text"] = parse_module.PlainTextParser
-        self.plugins["dspam.tokenizer"]["word"] = tokenize_module.WordTokenizer
-        self.plugins["dspam.classifier"]["dummy"] = classify_module.DummyClassifier
-        self.plugins["dspam.classifier"]["simple"] = classify_module.SimpleClassifier
-        self.plugins["dspam.train"]["simple"] = training_module.SimpleTrainer
-        self.plugins["dspam.storage"]["json"] = storage_module.JSONStorage
+        self.plugins[self.PARSER]["plaintext"] = parse_module.PlainTextParser
+        self.plugins[self.TOKENIZER]["word"] = tokenize_module.WordTokenizer
+        self.plugins[self.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
+        self.plugins[self.CLASSIFIER]["simple"] = classify_module.SimpleClassifier
+        self.plugins[self.TRAIN]["simple"] = training_module.SimpleTrainer
+        self.plugins[self.STORAGE]["json"] = storage_module.JSONStorage
 
-    def load_plugins(self, entry_point_group: str) -> None:
-        """
-        Load plugins from the specified entry point group.
-
-        :param entry_point_group: The entry point group to load plugins from.
-        """
-        for entry_point in importlib.metadata.entry_points(group=entry_point_group):
-            self.load_plugin(entry_point)
-
-    def load_plugin(self, entry_point: importlib.metadata.EntryPoint) -> None:
-        try:
-            plugin_class = entry_point.load()
-            self.plugins[entry_point.group][entry_point.name] = plugin_class
-        except Exception as err:
-            print(f"Error loading plugin {entry_point.name}: {err}")
+    def load_entrypoint_plugins(self):
+        for entry_point_group, group in self.PLUGIN_ENTRY_POINTS.items():
+            for entry_point in importlib.metadata.entry_points(group=entry_point_group):
+                try:
+                    plugin_class = entry_point.load()
+                    self.plugins[group][entry_point.name] = plugin_class
+                except Exception as err:
+                    print(f"Error loading plugin {entry_point.name}: {err}")
 
     def list_plugins(self) -> Generator[PluginInfo]:
         """
@@ -84,7 +85,7 @@ class PluginManager:
 
         :return: A generator of PluginInfo objects containing information about each loaded plugin.
         """
-        for entry_point_group, plugins in self.plugins.items():
+        for group, plugins in self.plugins.items():
             for plugin, plugin_class in plugins.items():
                 module = plugin_class.__module__
                 package = module.split(".")[0]
@@ -97,8 +98,25 @@ class PluginManager:
 
                 yield PluginInfo(
                     name=plugin,
-                    entry_point_group=entry_point_group,
+                    group=group,
                     package=package,
                     version=version,
                     api_version=api_version,
                 )
+
+    def get_plugin(
+        self, group_name: str, plugin_name: str | None = None
+    ) -> type | None:
+        """
+        Get the plugin class for the specified group and plugin name.
+
+        :param group_name: The entry point group to get the plugin from.
+        :param plugin_name: The name of the plugin to get.
+        :return: The plugin class, or None if the plugin is not found.
+        """
+        group = self.plugins.get(group_name, {})
+        if plugin_name is None:
+            # Return the first plugin in the group_name if no plugin name is specified
+            return next(iter(group.values()), None)
+
+        return group.get(plugin_name)
