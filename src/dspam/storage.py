@@ -15,15 +15,13 @@ import os
 import orjson
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from pathlib import Path
-
-import aiofiles
+from anyio import Path
 
 
-def get_storage_root() -> Path:
+async def get_storage_root() -> Path:
     """Get the root directory for storage files. This is typically a hidden directory in the user's home directory."""
     xdg_data_home = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    return Path(xdg_data_home).expanduser() / "python-dspam"
+    return await Path(xdg_data_home).expanduser() / "python-dspam"
 
 
 @dataclass
@@ -92,7 +90,7 @@ class JSONStorage(BaseStorage):
             return
 
         try:
-            async with aiofiles.open(self.path, "rb") as f:
+            async with await self.path.open("rb") as f:
                 raw = await f.read()
                 data = orjson.loads(raw)
         except FileNotFoundError:
@@ -106,11 +104,12 @@ class JSONStorage(BaseStorage):
         if not hasattr(self, "data"):
             return
 
-        self.path.parent.mkdir(parents=True, exist_ok=True)
         data = {}
         for token, token_data in self.data.items():
             data[token] = asdict(token_data)
-        async with aiofiles.open(self.path, "wb") as f:
+
+        await self.path.parent.mkdir(parents=True, exist_ok=True)
+        async with await self.path.open("wb") as f:
             dumped = orjson.dumps(data)
             await f.write(dumped)
 

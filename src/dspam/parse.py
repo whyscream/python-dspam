@@ -1,10 +1,10 @@
-from typing import TextIO
+from anyio import AsyncFile
 
 
 class BaseParser:
     API_VERSION: str
 
-    def __init__(self, fp: TextIO) -> None:
+    def __init__(self, fp: AsyncFile) -> None:
         self.fp = fp
 
     async def __call__(self, *args, **kwargs) -> tuple[str, dict[str, str]]:
@@ -21,5 +21,7 @@ class PlainTextParser(BaseParser):
     API_VERSION: str = "1.0"
 
     async def __call__(self, *args, **kwargs) -> tuple[str, dict[str, str]]:
-        content = self.fp.read()
+        content = await self.fp.read()
+        if isinstance(content, bytes):
+            content = content.decode("utf-8")
         return content, {}

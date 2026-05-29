@@ -1,4 +1,4 @@
-from pathlib import Path
+from anyio import Path
 
 from dspam.classify import SimpleClassifier
 from dspam.parse import PlainTextParser
@@ -10,14 +10,14 @@ from dspam.train import SimpleTrainer
 
 async def classify(pm: PluginManager, file_path: Path):
     """Process the given file."""
-    with file_path.open() as f:
+    async with await file_path.open() as f:
         parser = PlainTextParser(f)
         content, metadata = await parser()
 
     tokenizer = WordTokenizer(content, metadata)
     tokens = await tokenizer()
 
-    storage_path = get_storage_root() / "storage.json"
+    storage_path = await get_storage_root() / "storage.json"
     storage = JSONStorage(storage_path)
 
     classifier = SimpleClassifier(tokens, storage)
@@ -28,14 +28,14 @@ async def classify(pm: PluginManager, file_path: Path):
 
 async def train(pm: PluginManager, file_path: Path, classification: str | None = None):
     """Train the classifier with the given file and classification."""
-    with file_path.open() as f:
+    async with await file_path.open() as f:
         parser = PlainTextParser(f)
         content, metadata = await parser()
 
     tokenizer = WordTokenizer(content, metadata)
     tokens = await tokenizer()
 
-    storage_path = get_storage_root() / "storage.json"
+    storage_path = await get_storage_root() / "storage.json"
     storage = JSONStorage(storage_path)
 
     if not classification:

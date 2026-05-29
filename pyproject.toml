@@ -10,7 +10,7 @@ name = "python-dspam"
 requires-python = ">=3.14"
 dynamic = ["version"]
 dependencies = [
-    "aiofiles>=25.1.0",
+    "anyio>=4.13.0",
     "cyclopts>=4.11.0",
     "orjson>=3.11.9",
 ]

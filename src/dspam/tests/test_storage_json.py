@@ -21,9 +21,9 @@ async def test_json_storage_open_empty(storage):
 @pytest.mark.asyncio
 async def test_json_storage_open_existing(storage, token):
     """Test that the storage can be opened and has data"""
-    storage.path.parent.mkdir(parents=True, exist_ok=True)
+    await storage.path.parent.mkdir(parents=True, exist_ok=True)
     data = {"token": asdict(token)}
-    storage.path.write_text(json.dumps(data))
+    await storage.path.write_text(json.dumps(data))
 
     await storage.open()
     assert storage.data == {"token": token}
@@ -35,7 +35,7 @@ async def test_json_storage_persist(storage):
     storage.data = {}
 
     await storage.persist()
-    assert storage.path.is_file()
+    assert await storage.path.is_file()
 
 
 @pytest.mark.asyncio
