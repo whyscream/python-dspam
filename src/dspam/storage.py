@@ -47,6 +47,9 @@ class TokenData:
 class BaseStorage:
     API_VERSION: str
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+
     async def store_spam_token(self, token: str) -> None:
         """
         Add a spam token to the storage.
@@ -84,6 +87,9 @@ class JSONStorage(BaseStorage):
 
     def __init__(self, path: Path | str) -> None:
         self.path = Path(path)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION}, path={self.path})"
 
     async def open(self):
         if hasattr(self, "data"):

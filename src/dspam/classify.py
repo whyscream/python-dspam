@@ -1,5 +1,9 @@
+import logging
+
 from dspam import IS_HAM, IS_SPAM
 from dspam.storage import BaseStorage
+
+logger = logging.getLogger(__name__)
 
 
 class BaseClassifier:
@@ -11,6 +15,9 @@ class BaseClassifier:
 
     async def __call__(self, *args, **kwargs) -> str:
         raise NotImplementedError("Subclasses must implement the __call__ method.")
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
 
 class DummyClassifier(BaseClassifier):
@@ -45,7 +52,10 @@ class SimpleClassifier(BaseClassifier):
             elif token_data.spam_hits < token_data.ham_hits:
                 token_results.append(IS_HAM)
 
-        if token_results.count(IS_SPAM) > token_results.count(IS_HAM):
+        spam_count = token_results.count(IS_SPAM)
+        ham_count = token_results.count(IS_HAM)
+        logger.info("Classifier token results: %d spam, %d ham", spam_count, ham_count)
+        if spam_count > ham_count:
             return IS_SPAM
         else:
             return IS_HAM

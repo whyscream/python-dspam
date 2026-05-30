@@ -10,6 +10,9 @@ class BaseParser:
     async def __call__(self, *args, **kwargs) -> tuple[str, dict[str, str]]:
         raise NotImplementedError("Subclasses must implement the __call__ method.")
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+
 
 class PlainTextParser(BaseParser):
     """

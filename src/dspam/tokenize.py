@@ -1,3 +1,7 @@
+DELIMITERS = '.,!?;:"@()[]{}<>=*/\\'
+"""The list of delimiters that a tokenizer uses to separate content into basic word-tokens."""
+
+
 class BaseTokenizer:
     API_VERSION: str
 
@@ -7,6 +11,9 @@ class BaseTokenizer:
 
     async def __call__(self, *args, **kwargs) -> list[str]:
         raise NotImplementedError("Subclasses must implement the __call__ method.")
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
 
 class WordTokenizer(BaseTokenizer):
@@ -19,6 +26,6 @@ class WordTokenizer(BaseTokenizer):
     API_VERSION: str = "1.0"
 
     async def __call__(self, *args, **kwargs) -> list[str]:
-        for char in '.,!?;:"()[]{}<>=*/\\':
-            self.content = self.content.replace(char, "")
+        for char in DELIMITERS:
+            self.content = self.content.replace(char, " ")
         return self.content.split()
