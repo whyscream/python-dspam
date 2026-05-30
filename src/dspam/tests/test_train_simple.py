@@ -14,10 +14,8 @@ async def test_train_simple_with_classification(storage):
         "token2": TokenData(token="token2", spam_hits=1, ham_hits=1),
     }
 
-    trainer = SimpleTrainer(
-        tokens=["token1", "token2"], storage=storage, classification=IS_HAM
-    )
-    await trainer()
+    trainer = SimpleTrainer(storage=storage)
+    await trainer(tokens=["token1", "token2"], classification=IS_HAM)
 
     token1_data = await storage.get_token("token1")
     assert token1_data.ham_hits == 2, "token1 should have an additional ham hit"

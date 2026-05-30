@@ -85,7 +85,9 @@ class PluginManager:
                     self.plugins[group][entry_point.name] = plugin_class
                     logger.info(f"Loaded plugin: {group}:{entry_point.name}")
                 except Exception as err:
-                    print(f"Error loading plugin {group}:{entry_point.name}: {err}")
+                    logger.error(
+                        f"Error loading plugin {group}:{entry_point.name}: {err}"
+                    )
 
     def list_plugins(self) -> Generator[PluginInfo]:
         """

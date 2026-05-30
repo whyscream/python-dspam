@@ -11,6 +11,7 @@ Additional metadata can be added:
 """
 
 import os
+from abc import ABC, abstractmethod
 
 import orjson
 from dataclasses import asdict, dataclass
@@ -44,42 +45,42 @@ class TokenData:
         self.last_updated = datetime.now(timezone.utc)
 
 
-class BaseStorage:
+class Storage(ABC):
     API_VERSION: str
 
     def __str__(self):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
+    @abstractmethod
     async def store_spam_token(self, token: str) -> None:
         """
         Add a spam token to the storage.
 
         This method may keep the data in memory, use persist() to save.
         """
-        raise NotImplementedError(
-            "Subclasses must implement the store_spam_token method."
-        )
+        pass
 
+    @abstractmethod
     async def store_ham_token(self, token: str) -> None:
         """
         Add a ham token to the storage.
 
         This method may keep the data in memory, use persist() to save.
         """
-        raise NotImplementedError(
-            "Subclasses must implement the store_ham_token method."
-        )
+        pass
 
+    @abstractmethod
     async def persist(self):
         """Persist all unsaved data to the storage backend."""
-        raise NotImplementedError("Subclasses must implement the persist method.")
+        pass
 
+    @abstractmethod
     async def get_token(self, token: str) -> TokenData | None:
         """Find a token from the storage."""
-        raise NotImplementedError("Subclasses must implement the get_token method.")
+        pass
 
 
-class JSONStorage(BaseStorage):
+class JSONStorage(Storage):
     API_VERSION = "1.0"
 
     data: dict[str, TokenData]

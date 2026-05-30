@@ -12,14 +12,14 @@ async def _parse_and_tokenize(pm: PluginManager, file_path: Path) -> list[str]:
     parser_class = pm.get_plugin(pm.PARSER)
     tokenizer_class = pm.get_plugin(pm.TOKENIZER)
 
-    async with await file_path.open() as f:
-        parser = parser_class(f)
+    async with await file_path.open() as fp:
+        parser = parser_class()
         logger.debug(f"Initialized parser: {parser}")
-        content, metadata = await parser()
+        result = await parser(fp)
 
-    tokenizer = tokenizer_class(content, metadata)
+    tokenizer = tokenizer_class()
     logger.debug(f"Initialized tokenizer: {tokenizer}")
-    tokens = await tokenizer()
+    tokens = await tokenizer(result.content, result.metadata)
     logger.info(f"Extracted {len(tokens)} tokens from {file_path}")
     return tokens
 
@@ -34,9 +34,9 @@ async def classify(pm: PluginManager, file_path: Path):
     logger.debug(f"Initialized storage: {storage}")
 
     classifier_class = pm.get_plugin(pm.CLASSIFIER)
-    classifier = classifier_class(tokens, storage)
+    classifier = classifier_class(storage)
     logger.debug(f"Initialized classifier: {classifier}")
-    classification = await classifier()
+    classification = await classifier(tokens)
 
     print(f"Classification result for {file_path}: {classification}")
 
@@ -55,13 +55,13 @@ async def train(pm: PluginManager, file_path: Path, classification: str | None =
             "No classification provided, using classifier to determine classification for training"
         )
         classifier_class = pm.get_plugin(pm.CLASSIFIER)
-        classifier = classifier_class(tokens, storage)
+        classifier = classifier_class(storage)
         logger.debug(f"Initialized classifier: {classifier}")
-        classification = await classifier()
+        classification = await classifier(tokens)
 
     train_class = pm.get_plugin(pm.TRAIN)
-    trainer = train_class(tokens, storage, classification)
+    trainer = train_class(storage)
     logger.debug(f"Initialized trainer: {trainer}")
-    await trainer(classification=classification)
+    await trainer(tokens=tokens, classification=classification)
 
     print(f"Trained {file_path} as: {classification}")

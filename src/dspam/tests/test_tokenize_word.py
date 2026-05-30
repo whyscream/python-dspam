@@ -10,8 +10,8 @@ def body():
 
 @pytest.mark.asyncio
 async def test_tokenize_sentence(body):
-    tokenizer = WordTokenizer(content=body, metadata={})
-    tokens = await tokenizer()
+    tokenizer = WordTokenizer()
+    tokens = await tokenizer(content=body, metadata={})
     assert tokens == [
         "The",
         "quick",
@@ -28,8 +28,8 @@ async def test_tokenize_sentence(body):
 @pytest.mark.asyncio
 async def test_tokenize_with_delimiters():
     body = "The;quick:brown,fox@jumps over\nthe\tlazy dog."
-    tokenizer = WordTokenizer(content=body, metadata={})
-    tokens = await tokenizer()
+    tokenizer = WordTokenizer()
+    tokens = await tokenizer(content=body, metadata={})
     assert tokens == [
         "The",
         "quick",

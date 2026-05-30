@@ -1,30 +1,35 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
 from anyio import AsyncFile
 
 
-class BaseParser:
+@dataclass
+class ParseResult:
+    content: str
+    metadata: dict[str, str]
+
+
+class Parser(ABC):
     API_VERSION: str
 
-    def __init__(self, fp: AsyncFile) -> None:
-        self.fp = fp
-
-    async def __call__(self, *args, **kwargs) -> tuple[str, dict[str, str]]:
-        raise NotImplementedError("Subclasses must implement the __call__ method.")
+    @abstractmethod
+    async def __call__(self, fp: AsyncFile) -> ParseResult:
+        pass
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
 
-class PlainTextParser(BaseParser):
+class PlainTextParser(Parser):
     """
     A simple parser that reads the input text file and returns its content.
-
-    No metadata is retrieved in this implementation, but the method signature allows for future extensions where metadata can be extracted from the file.
     """
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, *args, **kwargs) -> tuple[str, dict[str, str]]:
-        content = await self.fp.read()
+    async def __call__(self, fp: AsyncFile) -> ParseResult:
+        content = await fp.read()
         if isinstance(content, bytes):
             content = content.decode("utf-8")
-        return content, {}
+        return ParseResult(content=content, metadata={})
