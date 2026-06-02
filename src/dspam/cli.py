@@ -12,16 +12,11 @@ from cyclopts import App, Parameter, validators
 from rich.console import Console
 from rich.table import Table
 
-from dspam.plugins import PluginManager
+from dspam.di import container
 from dspam.main import classify, train
+from dspam.plugins import PluginManager
 
 cli = App(help=__doc__, version=version("python-dspam"))
-
-
-def get_plugin_manager() -> PluginManager:
-    pm = PluginManager()
-    pm.load_all_plugins()
-    return pm
 
 
 @cli.command(name="classify", help="Classify a file")
@@ -35,8 +30,7 @@ async def classify_file(
         ),
     ],
 ):
-    pm = get_plugin_manager()
-    await classify(pm=pm, file_path=file_path)
+    await classify(file_path=file_path)
 
 
 @cli.command(name="train", help="Train the classifier")
@@ -54,8 +48,7 @@ async def train_from_file(
         Parameter(alias="-c", help="Classification of the file (ham or spam)"),
     ] = None,
 ):
-    pm = get_plugin_manager()
-    await train(pm=pm, file_path=file_path, classification=classification)
+    await train(file_path=file_path, classification=classification)
 
 
 plugins = App(name="plugins", help="Manage plugins", group="Subcommands")
@@ -64,7 +57,7 @@ cli.command(plugins)
 
 @plugins.command(name="list", help="List available plugins")
 def plugins_list():
-    pm = get_plugin_manager()
+    pm = container.resolve(PluginManager)
     plugins_ = pm.list_plugins()
 
     console = Console()

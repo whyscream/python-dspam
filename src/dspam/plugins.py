@@ -38,18 +38,19 @@ class PluginManager:
     PARSER = "parser"
     TOKENIZER = "tokenizer"
     CLASSIFIER = "classifier"
-    TRAIN = "train"
+    TRAINER = "trainer"
     STORAGE = "storage"
 
     GROUPS = [
         PARSER,
         TOKENIZER,
         CLASSIFIER,
-        TRAIN,
+        TRAINER,
         STORAGE,
     ]
 
     PLUGIN_ENTRY_POINTS = {f"dspam.{group}": group for group in GROUPS}
+    """Supported entry point groups for registering plugins: dspam:<group name>."""
 
     def __init__(self):
         self.plugins = {group: {} for group in self.GROUPS}
@@ -71,11 +72,11 @@ class PluginManager:
         self.plugins[self.TOKENIZER]["word"] = tokenize_module.WordTokenizer
         self.plugins[self.CLASSIFIER]["simple"] = classify_module.SimpleClassifier
         self.plugins[self.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
-        self.plugins[self.TRAIN]["simple"] = training_module.SimpleTrainer
+        self.plugins[self.TRAINER]["simple"] = training_module.SimpleTrainer
         self.plugins[self.STORAGE]["json"] = storage_module.JSONStorage
 
         plugin_names = [f"{p.group}:{p.name}" for p in self.list_plugins()]
-        logger.info(f"Loaded built-in plugins: {', '.join(plugin_names)}")
+        logger.debug(f"Loaded built-in plugins: {', '.join(plugin_names)}")
 
     def load_entrypoint_plugins(self):
         for entry_point_group, group in self.PLUGIN_ENTRY_POINTS.items():
@@ -83,7 +84,7 @@ class PluginManager:
                 try:
                     plugin_class = entry_point.load()
                     self.plugins[group][entry_point.name] = plugin_class
-                    logger.info(f"Loaded plugin: {group}:{entry_point.name}")
+                    logger.debug(f"Loaded plugin: {group}:{entry_point.name}")
                 except Exception as err:
                     logger.error(
                         f"Error loading plugin {group}:{entry_point.name}: {err}"

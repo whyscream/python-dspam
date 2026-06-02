@@ -67,7 +67,8 @@ async def test_json_storage_persist_and_open(storage):
     await storage.persist()
 
     # Create a new instance to test that the data is loaded correctly
-    new_storage = JSONStorage(storage.path)
+    storage_root = storage.path.parent
+    new_storage = JSONStorage(storage_root)
     await new_storage.open()
 
     assert "spam-token" in new_storage.data

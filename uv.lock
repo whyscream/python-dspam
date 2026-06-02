@@ -453,6 +453,7 @@ dependencies = [
     { name = "anyio" },
     { name = "cyclopts" },
     { name = "orjson" },
+    { name = "rodi" },
 ]
 
 [package.dev-dependencies]
@@ -472,6 +473,7 @@ requires-dist = [
     { name = "anyio", specifier = ">=4.13.0" },
     { name = "cyclopts", specifier = ">=4.11.0" },
     { name = "orjson", specifier = ">=3.11.9" },
+    { name = "rodi", specifier = ">=2.1.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -536,6 +538,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bc/6d/a506aaa4a9eaa945ed8ab2b7347859f53593864289853c5d6d62b77246e0/rich_rst-1.3.2.tar.gz", hash = "sha256:a1196fdddf1e364b02ec68a05e8ff8f6914fee10fbca2e6b6735f166bb0da8d4", size = 14936, upload-time = "2025-10-14T16:49:45.332Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/2f/b4530fbf948867702d0a3f27de4a6aab1d156f406d72852ab902c4d04de9/rich_rst-1.3.2-py3-none-any.whl", hash = "sha256:a99b4907cbe118cf9d18b0b44de272efa61f15117c61e39ebdc431baf5df722a", size = 12567, upload-time = "2025-10-14T16:49:42.953Z" },
+]
+
+[[package]]
+name = "rodi"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/e6/72d8fbdaf8e70b5e717a889f7d35f4983173cdcd3a5c1a9e427d064bb4c2/rodi-2.1.0.tar.gz", hash = "sha256:7e1548361dcff5eb5e5228c752ed9a3ac1535cbdc1ba0561deeb63b686f069c5", size = 16780, upload-time = "2026-03-08T19:31:22.467Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/34/9565181b12a94139376b49645f2439d57f14d01082e12d28f8d88f1a2b27/rodi-2.1.0-py3-none-any.whl", hash = "sha256:cfca0d9b9f6693850d2ec01c5680aed5f5e356aafe4494671dc8caddd569d654", size = 14734, upload-time = "2026-03-08T19:31:21.374Z" },
 ]
 
 [[package]]
