@@ -13,7 +13,9 @@ dependencies = [
     "anyio>=4.13.0",
     "cyclopts>=4.11.0",
     "orjson>=3.11.9",
-    "pydantic-settings>=2.14.1",  # TODO: start using https://github.com/pydantic/pydantic-settings/pull/882
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
+    "rich>=15.0.0",
     "rodi>=2.1.0",
 ]
 
@@ -33,3 +35,7 @@ test = [
 
 [tool.uv.workspace]
 members = ["plugins/*"]
+
+[tool.uv.sources]
+# TODO: remove after release of: https://github.com/pydantic/pydantic-settings/pull/882
+pydantic-settings = { git = "https://github.com/pydantic/pydantic-settings.git", rev = "afda1f71420bee772a0a0be9e6f6fac014df9e25" }
