@@ -15,6 +15,7 @@ from rich.table import Table
 from dspam.di import container
 from dspam.main import classify, train
 from dspam.plugins import PluginManager
+from dspam.settings import Settings
 
 cli = App(help=__doc__, version=version("python-dspam"))
 
@@ -80,8 +81,10 @@ def plugins_list():
 
 
 def main():
+    settings = container.resolve(Settings)
     logging.basicConfig(
-        level="INFO", format="%(asctime)s %(name)s %(levelname)s: %(message)s"
+        level=settings.log_level,
+        format="%(asctime)s %(name)s %(levelname)s: %(message)s",
     )
     cli()
 

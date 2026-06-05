@@ -19,11 +19,13 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from anyio import Path
 
+from dspam.settings import StorageSettings
+
 
 def get_storage_root() -> SyncPath:
     """Get the root directory for storage files. This is typically a hidden directory in the user's home directory."""
     xdg_data_home = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    return SyncPath(xdg_data_home).expanduser() / "python-dspam"
+    return SyncPath(xdg_data_home).expanduser().resolve() / "python-dspam"
 
 
 @dataclass
@@ -52,10 +54,10 @@ class Storage(ABC):
     def __str__(self):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
-    @abstractmethod
-    def __init__(self, storage_root: SyncPath) -> None:
+    def __init__(self, settings: StorageSettings, storage_root: SyncPath) -> None:
         """Initialize the storage with the given root directory. The storage may create files or directories under this root as needed."""
-        pass
+        self.settings = settings
+        self.storage_root = storage_root
 
     @abstractmethod
     async def store_spam_token(self, token: str) -> None:
@@ -94,8 +96,9 @@ class JSONStorage(Storage):
     path: Path
     """Path to the stored token data."""
 
-    def __init__(self, storage_root: SyncPath) -> None:
-        self.path = Path(storage_root) / "storage.json"
+    def __init__(self, settings: StorageSettings, storage_root: SyncPath) -> None:
+        super().__init__(settings, storage_root)
+        self.path = Path(self.storage_root) / "storage.json"
 
     def __str__(self):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION}, path={self.path})"

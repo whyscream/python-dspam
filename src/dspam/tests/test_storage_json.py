@@ -3,6 +3,7 @@ from dataclasses import asdict
 
 import pytest
 
+from dspam.settings import StorageSettings
 from dspam.storage import JSONStorage, TokenData
 
 
@@ -68,7 +69,7 @@ async def test_json_storage_persist_and_open(storage):
 
     # Create a new instance to test that the data is loaded correctly
     storage_root = storage.path.parent
-    new_storage = JSONStorage(storage_root)
+    new_storage = JSONStorage(StorageSettings(), storage_root)
     await new_storage.open()
 
     assert "spam-token" in new_storage.data

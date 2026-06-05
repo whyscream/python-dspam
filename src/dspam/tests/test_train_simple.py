@@ -1,6 +1,7 @@
 import pytest
 
 from dspam import IS_HAM
+from dspam.settings import TrainerSettings
 from dspam.storage import TokenData
 from dspam.train import SimpleTrainer
 
@@ -14,7 +15,7 @@ async def test_train_simple_with_classification(storage):
         "token2": TokenData(token="token2", spam_hits=1, ham_hits=1),
     }
 
-    trainer = SimpleTrainer(storage=storage)
+    trainer = SimpleTrainer(TrainerSettings(), storage=storage)
     await trainer(tokens=["token1", "token2"], classification=IS_HAM)
 
     token1_data = await storage.get_token("token1")

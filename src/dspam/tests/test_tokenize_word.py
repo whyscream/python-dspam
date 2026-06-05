@@ -1,5 +1,6 @@
 import pytest
 
+from dspam.settings import TokenizerSettings
 from dspam.tokenize import WordTokenizer
 
 
@@ -10,7 +11,7 @@ def body():
 
 @pytest.mark.asyncio
 async def test_tokenize_sentence(body):
-    tokenizer = WordTokenizer()
+    tokenizer = WordTokenizer(TokenizerSettings())
     tokens = await tokenizer(content=body, metadata={})
     assert tokens == [
         "The",
@@ -28,7 +29,7 @@ async def test_tokenize_sentence(body):
 @pytest.mark.asyncio
 async def test_tokenize_with_delimiters():
     body = "The;quick:brown,fox@jumps over\nthe\tlazy dog."
-    tokenizer = WordTokenizer()
+    tokenizer = WordTokenizer(TokenizerSettings())
     tokens = await tokenizer(content=body, metadata={})
     assert tokens == [
         "The",

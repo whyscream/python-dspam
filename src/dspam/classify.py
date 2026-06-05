@@ -2,6 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from dspam import IS_HAM, IS_SPAM
+from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 class Classifier(ABC):
     API_VERSION: str
 
-    def __init__(self, storage: Storage) -> None:
+    def __init__(self, settings: ClassifierSettings, storage: Storage) -> None:
+        self.settings = settings
         self.storage = storage
 
     @abstractmethod

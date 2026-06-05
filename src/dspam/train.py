@@ -2,13 +2,15 @@ from abc import ABC, abstractmethod
 from typing import LiteralString
 
 from dspam import IS_HAM, IS_SPAM
+from dspam.settings import TrainerSettings
 from dspam.storage import Storage
 
 
 class Trainer(ABC):
     API_VERSION: str
 
-    def __init__(self, storage: Storage) -> None:
+    def __init__(self, settings: TrainerSettings, storage: Storage) -> None:
+        self.settings = settings
         self.storage = storage
 
     @abstractmethod

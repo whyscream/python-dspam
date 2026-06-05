@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from anyio import AsyncFile
 
+from dspam.settings import ParserSettings
+
 
 @dataclass
 class ParseResult:
@@ -12,6 +14,9 @@ class ParseResult:
 
 class Parser(ABC):
     API_VERSION: str
+
+    def __init__(self, settings: ParserSettings):
+        self.settings = settings
 
     @abstractmethod
     async def __call__(self, fp: AsyncFile) -> ParseResult:

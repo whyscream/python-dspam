@@ -1,11 +1,13 @@
 from abc import ABC
 
-DELIMITERS = '.,!?;:"@()[]{}<>=*/\\'
-"""The list of delimiters that a tokenizer uses to separate content into basic word-tokens."""
+from dspam.settings import TokenizerSettings
 
 
 class Tokenizer(ABC):
     API_VERSION: str
+
+    def __init__(self, settings: TokenizerSettings):
+        self.settings = settings
 
     async def __call__(self, content: str, metadata: dict[str, str]) -> list[str]:
         pass
@@ -24,6 +26,6 @@ class WordTokenizer(Tokenizer):
     API_VERSION: str = "1.0"
 
     async def __call__(self, content: str, metadata: dict[str, str]) -> list[str]:
-        for char in DELIMITERS:
+        for char in self.settings.delimiters:
             content = content.replace(char, " ")
         return content.split()

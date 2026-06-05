@@ -3,6 +3,7 @@ import io
 import pytest
 from anyio import wrap_file
 
+from dspam.parse import ParserSettings
 from dspam_plugin_email.parse import EmailParser
 
 
@@ -24,7 +25,7 @@ def message():
 
 @pytest.mark.asyncio
 async def test_parse_email(message):
-    parser = EmailParser()
+    parser = EmailParser(ParserSettings())
     result = await parser(message)
     assert list(result.metadata.keys()) == ["From", "To", "Subject", "Date"]
     assert result.content is not None

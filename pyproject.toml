@@ -13,6 +13,7 @@ dependencies = [
     "anyio>=4.13.0",
     "cyclopts>=4.11.0",
     "orjson>=3.11.9",
+    "pydantic-settings>=2.14.1",  # TODO: start using https://github.com/pydantic/pydantic-settings/pull/882
     "rodi>=2.1.0",
 ]
 
