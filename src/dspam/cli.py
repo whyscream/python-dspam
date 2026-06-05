@@ -5,9 +5,9 @@ CLI interface for python DSPAM
 
 import logging
 from importlib.metadata import version
-from anyio import Path
 from typing import Annotated
 
+import anyio
 from cyclopts import App, Parameter, validators
 from rich.console import Console
 from rich.table import Table
@@ -23,7 +23,7 @@ cli = App(help=__doc__, version=version("python-dspam"))
 @cli.command(name="classify", help="Classify a file")
 async def classify_file(
     file_path: Annotated[
-        Path,
+        anyio.Path,
         Parameter(
             validator=validators.Path(exists=True, dir_okay=False),
             alias="-f",
@@ -37,7 +37,7 @@ async def classify_file(
 @cli.command(name="train", help="Train the classifier")
 async def train_from_file(
     file_path: Annotated[
-        Path,
+        anyio.Path,
         Parameter(
             validator=validators.Path(exists=True, dir_okay=False),
             alias="-f",

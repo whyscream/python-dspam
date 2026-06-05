@@ -11,21 +11,21 @@ Additional metadata can be added:
 """
 
 import os
+import pathlib
 from abc import ABC, abstractmethod
-from pathlib import Path as SyncPath
 
+import anyio
 import orjson
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from anyio import Path
 
 from dspam.settings import StorageSettings
 
 
-def get_storage_root() -> SyncPath:
+def get_storage_root() -> pathlib.Path:
     """Get the root directory for storage files. This is typically a hidden directory in the user's home directory."""
     xdg_data_home = os.getenv("XDG_DATA_HOME", "~/.local/share")
-    return SyncPath(xdg_data_home).expanduser().resolve() / "python-dspam"
+    return pathlib.Path(xdg_data_home).expanduser().resolve() / "python-dspam"
 
 
 @dataclass
@@ -54,7 +54,7 @@ class Storage(ABC):
     def __str__(self):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
-    def __init__(self, settings: StorageSettings, storage_root: SyncPath) -> None:
+    def __init__(self, settings: StorageSettings, storage_root: pathlib.Path) -> None:
         """Initialize the storage with the given root directory. The storage may create files or directories under this root as needed."""
         self.settings = settings
         self.storage_root = storage_root
@@ -93,12 +93,12 @@ class JSONStorage(Storage):
 
     data: dict[str, TokenData]
     """In-memery version of the stored token data."""
-    path: Path
+    path: anyio.Path
     """Path to the stored token data."""
 
-    def __init__(self, settings: StorageSettings, storage_root: SyncPath) -> None:
+    def __init__(self, settings: StorageSettings, storage_root: pathlib.Path) -> None:
         super().__init__(settings, storage_root)
-        self.path = Path(self.storage_root) / "storage.json"
+        self.path = anyio.Path(self.storage_root) / "storage.json"
 
     def __str__(self):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION}, path={self.path})"

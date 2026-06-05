@@ -1,4 +1,4 @@
-from pathlib import Path as SyncPath
+import pathlib
 
 import pytest
 
@@ -10,6 +10,6 @@ from dspam.storage import JSONStorage
 def storage(tmp_path):
     json_storage = JSONStorage(StorageSettings(), tmp_path)
     yield json_storage
-    json_storage_path = SyncPath(json_storage.path)
+    json_storage_path = pathlib.Path(json_storage.path)
     if json_storage_path.exists():
         json_storage_path.unlink()

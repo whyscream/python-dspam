@@ -1,5 +1,5 @@
 import os
-from pathlib import Path as SyncPath
+import pathlib
 from typing import Literal
 
 from pydantic_settings import (
@@ -10,10 +10,10 @@ from pydantic_settings import (
 )
 
 
-def get_config_root() -> SyncPath:
+def get_config_root() -> pathlib.Path:
     """Return the path to the root of the configuration directory."""
     xdg_config_home = os.getenv("XDG_CONFIG_HOME", "~/.config")
-    return SyncPath(xdg_config_home).expanduser().resolve() / "python-dspam"
+    return pathlib.Path(xdg_config_home).expanduser().resolve() / "python-dspam"
 
 
 class ParserSettings(BaseSettings):
