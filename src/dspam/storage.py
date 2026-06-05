@@ -36,8 +36,8 @@ class TokenData:
     token_hash: str = ""
     spam_hits: int = 0
     ham_hits: int = 0
-    last_seen: datetime = None
-    last_updated: datetime = None
+    last_seen: datetime | None = None
+    last_updated: datetime | None = None
 
     def add_spam_hit(self):
         self.spam_hits += 1

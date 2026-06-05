@@ -5,6 +5,7 @@ from email.message import EmailMessage as PyEmailMessage
 
 from anyio import AsyncFile
 
+from dspam.exceptions import DspamParseError
 from dspam.parse import Parser, ParseResult
 
 
@@ -24,12 +25,15 @@ class EmailParser(Parser):
         if isinstance(file_content, bytes):
             file_content = file_content.decode("utf-8")
 
-        message: PyEmailMessage = PyEmailParser(
+        message_parser = PyEmailParser(
             policy=email.policy.default, _class=PyEmailMessage
-        ).parsestr(file_content)
+        )
+        message: PyEmailMessage = message_parser.parsestr(file_content)
+        if message is None:
+            raise DspamParseError("Failed to parse email")
         # For now, assume the message has no mime-encoded parts and is a simple text email
         # Note: this also returns message headers :(
-        content = message.get_body(preferencelist=("plain", "html")).as_string()
+        content = message.get_body(preferencelist=("plain", "html")).as_string()  # type: ignore[union-attr]
 
         # For now, ignore that messages can have multiple headers with the same name (e.g. Received)
         metadata = {k: v for k, v in message.items()}

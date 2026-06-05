@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import LiteralString
+from typing import Literal
 
-from dspam import IS_HAM, IS_SPAM
+from dspam import IS_SPAM
 from dspam.settings import TrainerSettings
 from dspam.storage import Storage
 
@@ -15,7 +15,7 @@ class Trainer(ABC):
 
     @abstractmethod
     async def __call__(
-        self, tokens: list[str], classification: LiteralString[IS_HAM, IS_SPAM]
+        self, tokens: list[str], classification: Literal["ham", "spam"]
     ) -> None:
         pass
 

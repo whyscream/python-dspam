@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from dspam.settings import TokenizerSettings
 
@@ -6,9 +6,10 @@ from dspam.settings import TokenizerSettings
 class Tokenizer(ABC):
     API_VERSION: str
 
-    def __init__(self, settings: TokenizerSettings):
+    def __init__(self, settings: TokenizerSettings) -> None:
         self.settings = settings
 
+    @abstractmethod
     async def __call__(self, content: str, metadata: dict[str, str]) -> list[str]:
         pass
 
