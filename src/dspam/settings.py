@@ -30,15 +30,18 @@ class TokenizerSettings(BaseSettings):
 
 
 class StorageSettings(BaseSettings):
-    pass
+    plugin: str = "json"
+    """The plugin to use for storing data."""
 
 
 class ClassifierSettings(BaseSettings):
-    pass
+    plugin: str = "simple"
+    """The plugin to use for classification."""
 
 
 class TrainerSettings(BaseSettings):
-    pass
+    plugin: str = "simple"
+    """The plugin to use for training."""
 
 
 class Settings(BaseSettings):

@@ -19,7 +19,9 @@ import importlib.metadata
 import logging
 from dataclasses import dataclass
 from collections.abc import Generator
+from typing import Any
 
+from dspam.exceptions import DspamPluginNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -115,9 +117,7 @@ class PluginManager:
                     api_version=api_version,
                 )
 
-    def get_plugin(
-        self, group_name: str, plugin_name: str | None = None
-    ) -> type | None:
+    def get_plugin(self, group_name: str, plugin_name: str) -> type[Any]:
         """
         Get the plugin class for the specified group and plugin name.
 
@@ -126,8 +126,7 @@ class PluginManager:
         :return: The plugin class, or None if the plugin is not found.
         """
         group = self.plugins.get(group_name, {})
-        if plugin_name is None:
-            # Return the first plugin in the group_name if no plugin name is specified
-            return next(iter(group.values()), None)
-
-        return group.get(plugin_name)
+        plugin = group.get(plugin_name, False)
+        if not plugin:
+            raise DspamPluginNotFound(f"Plugin {group_name}.{plugin_name} not found")
+        return plugin

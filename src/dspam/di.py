@@ -28,8 +28,8 @@ def plugin_manager_factory() -> PluginManager:
 def parser_factory(context: ActivationScope) -> Parser:
     """Factory for DI-supplied Parser instances."""
     pm = context.provider.get(PluginManager)
-    parser_class: type[Parser] = pm.get_plugin(pm.PARSER)
     settings = context.provider.get(Settings)
+    parser_class: type[Parser] = pm.get_plugin(pm.PARSER, settings.parser.plugin)
 
     parser_instance = parser_class(settings=settings.parser)
     logger.debug(f"Initialized parser: {parser_instance}")
@@ -39,8 +39,10 @@ def parser_factory(context: ActivationScope) -> Parser:
 def tokenizer_factory(context: ActivationScope) -> Tokenizer:
     """Factory for DI-supplied Tokenizer instances."""
     pm = context.provider.get(PluginManager)
-    tokenizer_class: type[Tokenizer] = pm.get_plugin(pm.TOKENIZER)
     settings = context.provider.get(Settings)
+    tokenizer_class: type[Tokenizer] = pm.get_plugin(
+        pm.TOKENIZER, settings.tokenizer.plugin
+    )
 
     tokenizer_instance = tokenizer_class(settings=settings.tokenizer)
     logger.debug(f"Initialized tokenizer: {tokenizer_instance}")
@@ -50,8 +52,8 @@ def tokenizer_factory(context: ActivationScope) -> Tokenizer:
 def storage_factory(context: ActivationScope) -> Storage:
     """Factory for DI-supplied Storage instances."""
     pm = context.provider.get(PluginManager)
-    storage_class: type[Storage] = pm.get_plugin(pm.STORAGE)
     settings = context.provider.get(Settings)
+    storage_class: type[Storage] = pm.get_plugin(pm.STORAGE, settings.storage.plugin)
 
     storage_root = get_storage_root()
     storage_instance = storage_class(
@@ -64,9 +66,11 @@ def storage_factory(context: ActivationScope) -> Storage:
 def classify_factory(context: ActivationScope) -> Classifier:
     """Factory for DI-supplied Classifier instances."""
     pm = context.provider.get(PluginManager)
-    classification_class: type[Classifier] = pm.get_plugin(pm.CLASSIFIER)
-    storage = context.provider.get(Storage)
     settings = context.provider.get(Settings)
+    classification_class: type[Classifier] = pm.get_plugin(
+        pm.CLASSIFIER, settings.classifier.plugin
+    )
+    storage = context.provider.get(Storage)
 
     classifier_instance = classification_class(settings.classifier, storage)
     logger.debug(f"Initialized classifier: {classifier_instance}")
@@ -76,9 +80,9 @@ def classify_factory(context: ActivationScope) -> Classifier:
 def trainer_factory(context: ActivationScope) -> Trainer:
     """Factory for DI-supplied Trainer instances."""
     pm = context.provider.get(PluginManager)
-    trainer_class: type[Trainer] = pm.get_plugin(pm.TRAINER)
-    storage = context.provider.get(Storage)
     settings = context.provider.get(Settings)
+    trainer_class: type[Trainer] = pm.get_plugin(pm.TRAINER, settings.trainer.plugin)
+    storage = context.provider.get(Storage)
 
     trainer_instance = trainer_class(settings.trainer, storage)
     logger.debug(f"Initialized trainer: {trainer_instance}")

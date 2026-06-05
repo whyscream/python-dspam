@@ -60,19 +60,25 @@ cli.command(plugins)
 def plugins_list():
     pm = container.resolve(PluginManager)
     plugins_ = pm.list_plugins()
+    settings = container.resolve(Settings)
+    settings = settings.dict()
 
     console = Console()
     table = Table(show_header=True, header_style="bold magenta", title="Plugins")
     table.add_column("Group")
     table.add_column("Name")
+    table.add_column("In use")
     table.add_column("Package")
     table.add_column("Version")
     table.add_column("API version")
 
     for plugin in plugins_:
+        in_use = settings.get(plugin.group, {}).get("plugin") == plugin.name
+
         table.add_row(
             plugin.group,
             plugin.name,
+            str(in_use),
             plugin.package,
             plugin.version,
             plugin.api_version,
