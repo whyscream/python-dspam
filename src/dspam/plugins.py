@@ -19,7 +19,6 @@ import importlib.metadata
 import logging
 from dataclasses import dataclass
 from collections.abc import Generator
-from typing import Any
 
 from dspam.exceptions import DspamPluginNotFound
 
@@ -54,17 +53,17 @@ class PluginManager:
     PLUGIN_ENTRY_POINTS = {f"dspam.{group}": group for group in GROUPS}
     """Supported entry point groups for registering plugins: dspam:<group name>."""
 
-    def __init__(self):
-        self.plugins = {group: {} for group in self.GROUPS}
+    def __init__(self) -> None:
+        self.plugins: dict[str, dict[str, type]] = {group: {} for group in self.GROUPS}
 
-    def load_all_plugins(self):
+    def load_all_plugins(self) -> None:
         """
         Load all plugins from all entry point groups.
         """
         self.load_builtin_plugins()
         self.load_entrypoint_plugins()
 
-    def load_builtin_plugins(self):
+    def load_builtin_plugins(self) -> None:
         parse_module = importlib.import_module("dspam.parse")
         tokenize_module = importlib.import_module("dspam.tokenize")
         classify_module = importlib.import_module("dspam.classify")
@@ -80,7 +79,7 @@ class PluginManager:
         plugin_names = [f"{p.group}:{p.name}" for p in self.list_plugins()]
         logger.debug(f"Loaded built-in plugins: {', '.join(plugin_names)}")
 
-    def load_entrypoint_plugins(self):
+    def load_entrypoint_plugins(self) -> None:
         for entry_point_group, group in self.PLUGIN_ENTRY_POINTS.items():
             for entry_point in importlib.metadata.entry_points(group=entry_point_group):
                 try:
@@ -100,24 +99,24 @@ class PluginManager:
         """
         for group, plugins in self.plugins.items():
             for plugin, plugin_class in plugins.items():
-                module = plugin_class.__module__
-                package = module.split(".")[0]
+                module_name = plugin_class.__module__
+                package_name = module_name.split(".")[0]
                 try:
-                    version = importlib.metadata.version(package)
+                    version = importlib.metadata.version(package_name)
                 except importlib.metadata.PackageNotFoundError:
-                    module = importlib.import_module(package)
+                    module = importlib.import_module(package_name)
                     version = module.__version__
                 api_version = getattr(plugin_class, "API_VERSION", "0.0")
 
                 yield PluginInfo(
                     name=plugin,
                     group=group,
-                    package=package,
+                    package=package_name,
                     version=version,
                     api_version=api_version,
                 )
 
-    def get_plugin(self, group_name: str, plugin_name: str) -> type[Any]:
+    def get_plugin(self, group_name: str, plugin_name: str) -> type:
         """
         Get the plugin class for the specified group and plugin name.
 
@@ -126,7 +125,7 @@ class PluginManager:
         :return: The plugin class, or None if the plugin is not found.
         """
         group = self.plugins.get(group_name, {})
-        plugin = group.get(plugin_name, False)
+        plugin: type | None = group.get(plugin_name)
         if not plugin:
             raise DspamPluginNotFound(f"Plugin {group_name}.{plugin_name} not found")
         return plugin

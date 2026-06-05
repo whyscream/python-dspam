@@ -26,6 +26,19 @@ repos:
       - id: pyupgrade
         args: [ "--py314-plus" ]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v2.1.0'  # Use the sha / tag you want to point at
+    rev: v2.1.0
     hooks:
       - id: mypy
+        # Redirect all configuration settings to pyproject.toml
+        args: ['--config-file=pyproject.toml']
+        additional_dependencies:
+          - anyio
+          - orjson
+          - cyclopts
+          - pydantic-settings
+          - rich
+          - rodi
+        exclude: |
+            (?x)(
+                (^|/)tests/.*\.py$
+            )

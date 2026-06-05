@@ -89,12 +89,14 @@ def trainer_factory(context: ActivationScope) -> Trainer:
     return trainer_instance
 
 
-container = Container()
-container.add_singleton_by_factory(plugin_manager_factory)
-container.add_singleton_by_factory(storage_factory)
-container.register(Settings, instance=Settings())
+_container = Container()
+_container.add_singleton_by_factory(plugin_manager_factory)
+_container.add_singleton_by_factory(storage_factory)
+_container.register(Settings, instance=Settings())
 
-container.add_transient_by_factory(parser_factory)
-container.add_transient_by_factory(tokenizer_factory)
-container.add_transient_by_factory(classify_factory)
-container.add_transient_by_factory(trainer_factory)
+_container.add_transient_by_factory(parser_factory)
+_container.add_transient_by_factory(tokenizer_factory)
+_container.add_transient_by_factory(classify_factory)
+_container.add_transient_by_factory(trainer_factory)
+
+provider = _container.build_provider()

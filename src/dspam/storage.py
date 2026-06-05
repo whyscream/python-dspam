@@ -39,11 +39,11 @@ class TokenData:
     last_seen: datetime | None = None
     last_updated: datetime | None = None
 
-    def add_spam_hit(self):
+    def add_spam_hit(self) -> None:
         self.spam_hits += 1
         self.last_updated = datetime.now(timezone.utc)
 
-    def add_ham_hit(self):
+    def add_ham_hit(self) -> None:
         self.ham_hits += 1
         self.last_updated = datetime.now(timezone.utc)
 
@@ -51,7 +51,7 @@ class TokenData:
 class Storage(ABC):
     API_VERSION: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
     def __init__(self, settings: StorageSettings, storage_root: pathlib.Path) -> None:
@@ -78,7 +78,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def persist(self):
+    async def persist(self) -> None:
         """Persist all unsaved data to the storage backend."""
         pass
 
@@ -100,10 +100,10 @@ class JSONStorage(Storage):
         super().__init__(settings, storage_root)
         self.path = anyio.Path(self.storage_root) / "storage.json"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION}, path={self.path})"
 
-    async def open(self):
+    async def open(self) -> None:
         if hasattr(self, "data"):
             return
 
@@ -118,7 +118,7 @@ class JSONStorage(Storage):
         for token, token_data in data.items():
             self.data[token] = TokenData(**token_data)
 
-    async def persist(self):
+    async def persist(self) -> None:
         if not hasattr(self, "data"):
             return
 

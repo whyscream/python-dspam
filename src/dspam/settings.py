@@ -72,7 +72,8 @@ class Settings(BaseSettings):
         """
         config_root = get_config_root()
         config_path = config_root / "config.toml"
-        toml_settings = TomlConfigSettingsSource(
+        # TODO: remove type annotation ignore after release of https://github.com/pydantic/pydantic-settings/pull/882
+        toml_settings = TomlConfigSettingsSource(  # type: ignore[call-arg, unused-ignore]
             settings_cls, toml_file=config_path, toml_table_header=("dspam",)
         )
         return (

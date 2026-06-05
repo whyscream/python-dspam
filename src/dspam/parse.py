@@ -19,7 +19,7 @@ class Parser(ABC):
         self.settings = settings
 
     @abstractmethod
-    async def __call__(self, fp: AsyncFile) -> ParseResult:
+    async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
         pass
 
     def __str__(self) -> str:
@@ -33,8 +33,6 @@ class PlainTextParser(Parser):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, fp: AsyncFile) -> ParseResult:
+    async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
         content = await fp.read()
-        if isinstance(content, bytes):
-            content = content.decode("utf-8")
         return ParseResult(content=content, metadata={})

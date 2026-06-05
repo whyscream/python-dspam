@@ -19,12 +19,9 @@ class EmailParser(Parser):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, fp: AsyncFile) -> ParseResult:
+    async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
         # Bridge async AsyncFile to sync email.message_from_file
         file_content = await fp.read()
-        if isinstance(file_content, bytes):
-            file_content = file_content.decode("utf-8")
-
         message_parser = PyEmailParser(
             policy=email.policy.default, _class=PyEmailMessage
         )

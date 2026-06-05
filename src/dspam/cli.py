@@ -12,7 +12,8 @@ from cyclopts import App, Parameter, validators
 from rich.console import Console
 from rich.table import Table
 
-from dspam.di import container
+from dspam import Verdict
+from dspam.di import provider
 from dspam.main import classify, train
 from dspam.plugins import PluginManager
 from dspam.settings import Settings
@@ -30,7 +31,7 @@ async def classify_file(
             help="Path to the file to classify",
         ),
     ],
-):
+) -> None:
     await classify(file_path=file_path)
 
 
@@ -45,10 +46,10 @@ async def train_from_file(
         ),
     ],
     classification: Annotated[
-        str | None,
+        Verdict,
         Parameter(alias="-c", help="Classification of the file (ham or spam)"),
-    ] = None,
-):
+    ],
+) -> None:
     await train(file_path=file_path, classification=classification)
 
 
@@ -57,11 +58,11 @@ cli.command(plugins)
 
 
 @plugins.command(name="list", help="List available plugins")
-def plugins_list():
-    pm = container.resolve(PluginManager)
+def plugins_list() -> None:
+    pm = provider.get(PluginManager)
     plugins_ = pm.list_plugins()
-    settings = container.resolve(Settings)
-    settings = settings.dict()
+    settings = provider.get(Settings)
+    settings_dict = settings.dict()
 
     console = Console()
     table = Table(show_header=True, header_style="bold magenta", title="Plugins")
@@ -73,7 +74,7 @@ def plugins_list():
     table.add_column("API version")
 
     for plugin in plugins_:
-        in_use = settings.get(plugin.group, {}).get("plugin") == plugin.name
+        in_use = settings_dict.get(plugin.group, {}).get("plugin") == plugin.name
 
         table.add_row(
             plugin.group,
@@ -86,8 +87,8 @@ def plugins_list():
     console.print(table)
 
 
-def main():
-    settings = container.resolve(Settings)
+def main() -> None:
+    settings = provider.get(Settings)
     logging.basicConfig(
         level=settings.log_level,
         format="%(asctime)s %(name)s %(levelname)s: %(message)s",
