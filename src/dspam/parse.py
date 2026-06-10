@@ -4,12 +4,13 @@ from dataclasses import dataclass
 from anyio import AsyncFile
 
 from dspam.settings import ParserSettings
+from dspam.types import Metadata
 
 
 @dataclass
 class ParseResult:
     content: str
-    metadata: dict[str, str]
+    metadata: Metadata
 
 
 class Parser(ABC):

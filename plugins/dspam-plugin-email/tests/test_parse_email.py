@@ -20,7 +20,7 @@ async def message(assets):
         yield wrap_file(fp)
 
 
-async def test_parse_email(message):
+async def test_parse_email_headers(message):
     parser = EmailParser(ParserSettings())
     result = await parser(message)
     assert list(result.metadata.keys()) == [
@@ -43,5 +43,22 @@ async def test_parse_email(message):
         "X-SPF-Result",
         "Authentication-Results",
     ]
-    assert result.content is not None
-    # assert result.content.startswith("Hello,")
+    assert result.metadata["From"] == "Mary Benysek <workroom@frenkelfirm.com>", (
+        "From header should be parsed correctly"
+    )
+    assert result.metadata["Subject"] == "I saw your name on the list", (
+        "Single line subject should be parsed correctly"
+    )
+
+    received = result.metadata["Received"]
+    assert isinstance(received, list), "Received should be a list of multiple headers"
+    assert len(received) == 5, "Received should be a list of five headers"
+
+
+async def test_parse_email_body(message):
+    parser = EmailParser(ParserSettings())
+    result = await parser(message)
+    assert result.content.splitlines()[0] == "Hello,"
+    assert "Subject: I saw your name on the list" not in result.content
+    assert "Return-Path:" not in result.content
+    assert "Thank you & God bless you." in result.content

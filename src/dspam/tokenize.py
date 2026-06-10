@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from dspam.types import Metadata
 from dspam.settings import TokenizerSettings
 
 
@@ -10,7 +11,7 @@ class Tokenizer(ABC):
         self.settings = settings
 
     @abstractmethod
-    async def __call__(self, content: str, metadata: dict[str, str]) -> list[str]:
+    async def __call__(self, content: str, metadata: Metadata) -> list[str]:
         pass
 
     def __str__(self) -> str:
@@ -26,7 +27,7 @@ class WordTokenizer(Tokenizer):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, content: str, metadata: dict[str, str]) -> list[str]:
+    async def __call__(self, content: str, metadata: Metadata) -> list[str]:
         for char in self.settings.delimiters:
             content = content.replace(char, " ")
         return content.split()
