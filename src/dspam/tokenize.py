@@ -37,9 +37,9 @@ class WordTokenizer(Tokenizer):
 
     async def __call__(self, content: str, metadata: Metadata) -> TokenList:
         """Tokenize content and metadata into words based on whitespace and punctuation."""
-        content_tokens = self.tokenize_content(content)
         metadata_tokens = self.tokenize_metadata(metadata)
-        return content_tokens + metadata_tokens
+        content_tokens = self.tokenize_content(content)
+        return metadata_tokens + content_tokens
 
     def tokenize_content(self, content: str, ignore_delimiters: str = "") -> TokenList:
         """Generate a list of word tokens from the content string."""
@@ -66,7 +66,9 @@ class WordTokenizer(Tokenizer):
 
             elif isinstance(value, list):
                 for item in value:
-                    value_tokens = self.tokenize_content(item)
+                    value_tokens = self.tokenize_content(
+                        item, self.METADATA_IGNORE_DELIMITERS
+                    )
                     metadata_tokens.extend(self.make_metadata_token(key, value_tokens))
 
         return metadata_tokens

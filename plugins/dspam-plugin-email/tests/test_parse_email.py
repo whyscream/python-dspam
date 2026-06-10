@@ -1,40 +1,9 @@
 import io
-import pathlib
 
 import pytest
 from anyio import wrap_file
 
 from dspam.exceptions import DspamParseError
-from dspam.parse import ParserSettings
-from dspam_plugin_email.parse import EmailParser
-
-
-@pytest.fixture
-def email_parser():
-    return EmailParser(ParserSettings())
-
-
-@pytest.fixture
-def assets():
-    """Return the test assets directory"""
-    return pathlib.Path(__file__).parent / "assets"
-
-
-@pytest.fixture
-async def mf(assets):
-    """Factory to generate message objets from assets."""
-
-    async def message_factory(asset_name: str):
-        asset_path = assets / asset_name
-        fp = asset_path.open()
-        return wrap_file(fp)
-
-    return message_factory
-
-
-@pytest.fixture
-async def message(mf):
-    yield await mf("spam-plaintext.eml")
 
 
 async def test_parse_email_headers(email_parser, message):
