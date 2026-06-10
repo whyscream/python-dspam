@@ -6,3 +6,6 @@ from collections.abc import Mapping, Sequence
 
 type Metadata = Mapping[str, str | Sequence[str]]
 """Metadata as produced by a parser."""
+
+type TokenList = list[str]
+"""TokenList as produced by a tokenizer."""
