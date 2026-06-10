@@ -1,10 +1,17 @@
+import io
 import pathlib
 
 import pytest
 from anyio import wrap_file
 
+from dspam.exceptions import DspamParseError
 from dspam.parse import ParserSettings
 from dspam_plugin_email.parse import EmailParser
+
+
+@pytest.fixture
+def email_parser():
+    return EmailParser(ParserSettings())
 
 
 @pytest.fixture
@@ -14,15 +21,24 @@ def assets():
 
 
 @pytest.fixture
-async def message(assets):
-    message_path = assets / "spam-plaintext.eml"
-    with message_path.open() as fp:
-        yield wrap_file(fp)
+async def mf(assets):
+    """Factory to generate message objets from assets."""
+
+    async def message_factory(asset_name: str):
+        asset_path = assets / asset_name
+        fp = asset_path.open()
+        return wrap_file(fp)
+
+    return message_factory
 
 
-async def test_parse_email_headers(message):
-    parser = EmailParser(ParserSettings())
-    result = await parser(message)
+@pytest.fixture
+async def message(mf):
+    yield await mf("spam-plaintext.eml")
+
+
+async def test_parse_email_headers(email_parser, message):
+    result = await email_parser(message)
     assert list(result.metadata.keys()) == [
         "Return-Path",
         "Delivered-To",
@@ -55,10 +71,39 @@ async def test_parse_email_headers(message):
     assert len(received) == 5, "Received should be a list of five headers"
 
 
-async def test_parse_email_body(message):
-    parser = EmailParser(ParserSettings())
-    result = await parser(message)
+async def test_parse_email_body(email_parser, message):
+    result = await email_parser(message)
     assert result.content.splitlines()[0] == "Hello,"
     assert "Subject: I saw your name on the list" not in result.content
     assert "Return-Path:" not in result.content
     assert "Thank you & God bless you." in result.content
+
+
+async def test_parse_email_error(email_parser):
+    """Test that parsing a non-email file raises an error."""
+    with io.BytesIO(b"no text") as fp:
+        async_fp = wrap_file(fp)
+
+        with pytest.raises(DspamParseError, match="Failed to parse email"):
+            await email_parser(async_fp)
+
+
+async def test_parse_email_mime(mf, email_parser):
+    mime_message = await mf("multipart-mime.eml")
+    result = await email_parser(mime_message)
+    assert result.content.strip() == "this is the body text"
+    assert "Subject: Multipart MIME Email" not in result.content
+
+
+@pytest.mark.xfail(raises=DspamParseError)
+async def test_parse_email_mime_html_only(mf, email_parser):
+    mime_message = await mf("mime-html-only.eml")
+    result = await email_parser(mime_message)
+    assert result.content.strip() == "this is the body html"
+
+
+@pytest.mark.xfail(raises=DspamParseError)
+async def test_parse_email_html_only(mf, email_parser):
+    html_only_message = await mf("html-only.eml")
+    result = await email_parser(html_only_message)
+    assert result.content.strip() == "this is the body html"

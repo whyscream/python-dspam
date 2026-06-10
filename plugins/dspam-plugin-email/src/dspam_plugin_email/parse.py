@@ -22,14 +22,14 @@ class EmailParser(Parser):
     API_VERSION: str = "1.0"
 
     async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
-        # Bridge async AsyncFile to sync file-like object for email.parser
         file_content = await fp.read()
         message_parser = PyEmailParser(policy=email.policy.default, _class=EmailMessage)
-        message = cast(EmailMessage, message_parser.parsestr(file_content))  # type: ignore[redundant-cast]
-        if message is None:
+        try:
+            message = cast(EmailMessage, message_parser.parsestr(file_content))  # type: ignore[redundant-cast]
+        except TypeError:
             raise DspamParseError("Failed to parse email")
-        content = self.parse_body(message)
 
+        content = self.parse_body(message)
         metadata = self.parse_headers(message)
         return ParseResult(content, metadata)
 
