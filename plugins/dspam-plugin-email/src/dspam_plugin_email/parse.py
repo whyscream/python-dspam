@@ -1,7 +1,9 @@
 import email
 import email.policy
+import html
+import re
 from email.parser import Parser as PyEmailParser
-from email.message import EmailMessage
+from email.message import EmailMessage, MIMEPart
 from typing import cast
 
 from anyio import AsyncFile
@@ -21,6 +23,8 @@ class EmailParser(Parser):
 
     API_VERSION: str = "1.0"
 
+    STRIP_HTML_REGEX = re.compile(r"<[^>]+>")
+
     async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
         file_content = await fp.read()
         message_parser = PyEmailParser(policy=email.policy.default, _class=EmailMessage)
@@ -33,18 +37,35 @@ class EmailParser(Parser):
         metadata = self.parse_headers(message)
         return ParseResult(content, metadata)
 
-    @staticmethod
-    def parse_body(message: EmailMessage) -> str:
+    def parse_body(self, message: EmailMessage) -> str:
         """Extract the decoded text/plain body without message headers."""
         if message.is_multipart():
-            body_part = message.get_body(preferencelist=("plain",))
+            # TODO: look into multipart/related
+            body_part = message.get_body(preferencelist=("html", "plain"))
             if body_part is None:
-                raise DspamParseError("Email does not contain a text/plain body")
-            content = body_part.get_content()
+                raise DspamParseError("Email does not contain a supported body part")
+
+            if body_part.get_content_type() == "text/html":
+                content = self.parse_html_body(body_part)
+            elif body_part.get_content_type() == "text/plain":
+                content = body_part.get_content()
+            else:
+                raise DspamParseError(
+                    "Unsupported email body content type: {}".format(
+                        body_part.get_content_type()
+                    )
+                )
         else:
-            if message.get_content_type() != "text/plain":
-                raise DspamParseError("Only text/plain email messages are supported")
-            content = message.get_content()
+            if message.get_content_type() == "text/html":
+                content = self.parse_html_body(message)
+            elif message.get_content_type() == "text/plain":
+                content = message.get_content()
+            else:
+                raise DspamParseError(
+                    "Unsupported email body content type: {}".format(
+                        message.get_content_type()
+                    )
+                )
 
         if not isinstance(content, str):
             raise DspamParseError("Failed to decode email body as text")
@@ -64,3 +85,12 @@ class EmailParser(Parser):
             else:
                 headers[header_name] = header_value
         return headers
+
+    def parse_html_body(self, message_part: MIMEPart) -> str:
+        """Extract text content from an HTML email body."""
+        html_content = message_part.get_content()
+        # Simple way to extract text from HTML: remove tags for decode entities.
+        # For a more robust solution, consider using an HTML parser like BeautifulSoup.
+        text_content = re.sub(self.STRIP_HTML_REGEX, "", html_content)
+        text_content = html.unescape(text_content)
+        return text_content.strip()

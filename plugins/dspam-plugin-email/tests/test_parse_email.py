@@ -88,22 +88,30 @@ async def test_parse_email_error(email_parser):
             await email_parser(async_fp)
 
 
-async def test_parse_email_mime(mf, email_parser):
+async def test_parse_email_multipart_mime_should_prefer_html(mf, email_parser):
     mime_message = await mf("multipart-mime.eml")
     result = await email_parser(mime_message)
-    assert result.content.strip() == "this is the body text"
+    assert result.content.strip() == "this is the body html", (
+        "The HTML body should be preferred over the plain text body"
+    )
     assert "Subject: Multipart MIME Email" not in result.content
 
 
-@pytest.mark.xfail(raises=DspamParseError)
 async def test_parse_email_mime_html_only(mf, email_parser):
     mime_message = await mf("mime-html-only.eml")
     result = await email_parser(mime_message)
     assert result.content.strip() == "this is the body html"
 
 
-@pytest.mark.xfail(raises=DspamParseError)
 async def test_parse_email_html_only(mf, email_parser):
     html_only_message = await mf("html-only.eml")
     result = await email_parser(html_only_message)
     assert result.content.strip() == "this is the body html"
+
+
+async def test_parse_email_attachment_error(mf, email_parser):
+    attachment_message = await mf("mime-attachment-only.eml")
+    with pytest.raises(
+        DspamParseError, match="Email does not contain a supported body part"
+    ):
+        await email_parser(attachment_message)
