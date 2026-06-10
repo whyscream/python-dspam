@@ -49,3 +49,7 @@ pretty = true
 exclude = [
     '(^|/)tests(/|$)',
 ]
+
+[tool.pytest]
+minversion = "9.0"
+anyio_mode = "auto"

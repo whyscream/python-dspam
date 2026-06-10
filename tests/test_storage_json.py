@@ -12,14 +12,12 @@ def token():
     yield TokenData(token="token")
 
 
-@pytest.mark.asyncio
 async def test_json_storage_open_empty(storage):
     """Test that the storage can be opened and is empty"""
     await storage.open()
     assert storage.data == {}
 
 
-@pytest.mark.asyncio
 async def test_json_storage_open_existing(storage, token):
     """Test that the storage can be opened and has data"""
     await storage.path.parent.mkdir(parents=True, exist_ok=True)
@@ -30,7 +28,6 @@ async def test_json_storage_open_existing(storage, token):
     assert storage.data == {"token": token}
 
 
-@pytest.mark.asyncio
 async def test_json_storage_persist(storage):
     """Test that the storage can be persisted"""
     storage.data = {}
@@ -39,7 +36,6 @@ async def test_json_storage_persist(storage):
     assert await storage.path.is_file()
 
 
-@pytest.mark.asyncio
 async def test_json_storage_save_token(storage):
     await storage.store_spam_token("spam-token")
     assert "spam-token" in storage.data
@@ -50,7 +46,6 @@ async def test_json_storage_save_token(storage):
     assert storage.data["ham-token"].ham_hits == 1
 
 
-@pytest.mark.asyncio
 async def test_json_storage_save_token_repeated(storage):
     for _ in range(3):
         await storage.store_spam_token("spam-token")
@@ -61,7 +56,6 @@ async def test_json_storage_save_token_repeated(storage):
     assert len(storage.data.keys()) == 1
 
 
-@pytest.mark.asyncio
 async def test_json_storage_persist_and_open(storage):
     await storage.store_spam_token("spam-token")
     await storage.store_ham_token("ham-token")

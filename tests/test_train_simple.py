@@ -1,12 +1,9 @@
-import pytest
-
 from dspam import IS_HAM
 from dspam.settings import TrainerSettings
 from dspam.storage import TokenData
 from dspam.train import SimpleTrainer
 
 
-@pytest.mark.asyncio
 async def test_train_simple_with_classification(storage):
     """Test that the simple trainer can be called and updates the storage correctly using the classification."""
     # Simulate token data in storage
