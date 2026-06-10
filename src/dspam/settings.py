@@ -67,19 +67,23 @@ class Settings(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """
-        Add a TOML file to the options for reading configuration. It's read from a file named 'config.toml'
+        Add an optional TOML file to the options for reading configuration. It's read from a file named 'config.toml'
         in the default configuration dir.
         """
-        config_root = get_config_root()
-        config_path = config_root / "config.toml"
-        # TODO: remove type annotation ignore after release of https://github.com/pydantic/pydantic-settings/pull/882
-        toml_settings = TomlConfigSettingsSource(  # type: ignore[call-arg, unused-ignore]
-            settings_cls, toml_file=config_path, toml_table_header=("dspam",)
-        )
-        return (
+        settings_sources = [
             init_settings,
             env_settings,
             dotenv_settings,
             file_secret_settings,
-            toml_settings,
-        )
+        ]
+
+        config_root = get_config_root()
+        config_path = config_root / "config.toml"
+        if config_path.exists():
+            # TODO: remove type annotation ignore after release of https://github.com/pydantic/pydantic-settings/pull/882
+            toml_settings = TomlConfigSettingsSource(  # type: ignore[call-arg, unused-ignore]
+                settings_cls, toml_file=config_path, toml_table_header=("dspam",)
+            )
+            settings_sources.append(toml_settings)
+
+        return tuple(settings_sources)
