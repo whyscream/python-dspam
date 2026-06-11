@@ -1,16 +1,34 @@
 import email
 import email.policy
 import html
+import logging
 import re
 from email.parser import Parser as PyEmailParser
 from email.message import EmailMessage, MIMEPart
 from typing import cast
 
 from anyio import AsyncFile
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from dspam.exceptions import DspamParseError
 from dspam.parse import Parser, ParseResult
 from dspam.types import Metadata
+
+logger = logging.getLogger(__name__)
+
+
+class EmailParserSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="DSPAM_PLUGIN_PARSER_EMAIL_",
+    )
+
+    ignore_headers: list[str] = []
+    """
+    Email headers to ignore during parsing.
+
+    Forged headers from other spam filters could lead to token pollution. And some headers are not relevant for
+    classification and can be safely ignored to reduce token count.
+    """
 
 
 class EmailParser(Parser):
@@ -72,11 +90,13 @@ class EmailParser(Parser):
 
         return content
 
-    @staticmethod
-    def parse_headers(message: EmailMessage) -> Metadata:
+    def parse_headers(self, message: EmailMessage) -> Metadata:
         """Extract metadata from email headers"""
         headers = {}
         for header_name in message.keys():
+            if header_name in self.settings.plugin_settings.ignore_headers:  # type: ignore[union-attr]
+                logger.debug(f"Ignoring header: {header_name}")
+                continue
             header_value = message.get_all(header_name)
             if header_value is None:
                 continue

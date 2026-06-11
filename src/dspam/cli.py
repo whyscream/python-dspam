@@ -87,6 +87,13 @@ def plugins_list() -> None:
     console.print(table)
 
 
+@cli.command(name="config")
+def dump_config() -> None:
+    settings = Settings()
+    console = Console()
+    console.print(settings.model_dump_json(indent=4))
+
+
 def main() -> None:
     settings = provider.get(Settings)
     logging.basicConfig(

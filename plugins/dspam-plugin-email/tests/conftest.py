@@ -5,12 +5,14 @@ from anyio import wrap_file
 
 from dspam.settings import ParserSettings
 
-from dspam_plugin_email.parse import EmailParser
+from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
 
 @pytest.fixture
 def email_parser():
-    return EmailParser(ParserSettings())
+    settings = ParserSettings()
+    settings.plugin_settings = EmailParserSettings()
+    return EmailParser(settings)
 
 
 @pytest.fixture

@@ -16,9 +16,12 @@ plugin API that it implements. This allows for compatibility checks when loading
 """
 
 import importlib.metadata
+import inspect
 import logging
 from dataclasses import dataclass
 from collections.abc import Generator
+
+from pydantic_settings import BaseSettings
 
 from dspam.exceptions import DspamPluginNotFound
 
@@ -129,3 +132,25 @@ class PluginManager:
         if not plugin:
             raise DspamPluginNotFound(f"Plugin {group_name}.{plugin_name} not found")
         return plugin
+
+    def get_plugin_settings(
+        self, group_name: str, plugin_name: str
+    ) -> type[BaseSettings] | None:
+        """
+        Get the settings class from the plugin module, if available, and return it.
+        """
+        try:
+            plugin = self.get_plugin(group_name, plugin_name)
+        except DspamPluginNotFound as err:
+            logger.warning(err)
+            return None
+
+        module = importlib.import_module(plugin.__module__)
+        settings_classes = [
+            member
+            for _, member in inspect.getmembers(module, inspect.isclass)
+            if issubclass(member, BaseSettings) and member is not BaseSettings
+        ]
+        if settings_classes:
+            return settings_classes[0]
+        return None

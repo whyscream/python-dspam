@@ -1,7 +1,9 @@
 import os
 import pathlib
+from functools import cached_property
+from typing import cast
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -9,6 +11,7 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+from dspam.plugins import PluginManager
 from dspam.types import LogLevel
 
 
@@ -18,9 +21,24 @@ def get_config_root() -> pathlib.Path:
     return pathlib.Path(xdg_config_home).expanduser().resolve() / "python-dspam"
 
 
+def get_plugin_settings(group_name: str, plugin_name: str) -> type[BaseSettings] | None:
+    from dspam.di import provider
+
+    pm = provider.get(PluginManager)
+    settings_class = pm.get_plugin_settings(group_name, plugin_name)
+    if settings_class:
+        return cast(type[BaseSettings], settings_class())
+    return None
+
+
 class ParserSettings(BaseModel):
     plugin: str = "plaintext"
     """The plugin to use for parsing."""
+
+    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
+    @cached_property
+    def plugin_settings(self) -> type[BaseSettings] | None:
+        return get_plugin_settings(PluginManager.PARSER, self.plugin)
 
 
 class TokenizerSettings(BaseModel):
@@ -30,20 +48,44 @@ class TokenizerSettings(BaseModel):
     delimiters: str = '.,!?;:"@()[]{}<>=*/\\'
     """The list of delimiters that a tokenizer uses to separate content into basic word-tokens."""
 
+    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
+    @cached_property
+    def plugin_settings(self) -> type[BaseSettings] | None:
+        settings = get_plugin_settings(PluginManager.TOKENIZER, self.plugin)
+        return settings
+
 
 class StorageSettings(BaseModel):
     plugin: str = "json"
     """The plugin to use for storing data."""
+
+    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
+    @cached_property
+    def plugin_settings(self) -> type[BaseSettings] | None:
+        settings = get_plugin_settings(PluginManager.STORAGE, self.plugin)
+        return settings
 
 
 class ClassifierSettings(BaseModel):
     plugin: str = "simple"
     """The plugin to use for classification."""
 
+    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
+    @cached_property
+    def plugin_settings(self) -> type[BaseSettings] | None:
+        settings = get_plugin_settings(PluginManager.CLASSIFIER, self.plugin)
+        return settings
+
 
 class TrainerSettings(BaseModel):
     plugin: str = "simple"
     """The plugin to use for training."""
+
+    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
+    @cached_property
+    def plugin_settings(self) -> type[BaseSettings] | None:
+        settings = get_plugin_settings(PluginManager.TRAINER, self.plugin)
+        return settings
 
 
 class Settings(BaseSettings):
