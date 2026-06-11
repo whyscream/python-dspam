@@ -3,6 +3,9 @@ Custom type annotations for dspam.
 """
 
 from collections.abc import Mapping, Sequence
+from typing import Literal
+
+type LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 type Metadata = Mapping[str, str | Sequence[str]]
 """Metadata as produced by a parser."""

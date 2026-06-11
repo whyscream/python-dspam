@@ -1,13 +1,15 @@
 import os
 import pathlib
-from typing import Literal
 
+from pydantic import BaseModel
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     TomlConfigSettingsSource,
 )
+
+from dspam.types import LogLevel
 
 
 def get_config_root() -> pathlib.Path:
@@ -16,12 +18,12 @@ def get_config_root() -> pathlib.Path:
     return pathlib.Path(xdg_config_home).expanduser().resolve() / "python-dspam"
 
 
-class ParserSettings(BaseSettings):
+class ParserSettings(BaseModel):
     plugin: str = "plaintext"
     """The plugin to use for parsing."""
 
 
-class TokenizerSettings(BaseSettings):
+class TokenizerSettings(BaseModel):
     plugin: str = "word"
     """The plugin to use for tokenization."""
 
@@ -29,25 +31,27 @@ class TokenizerSettings(BaseSettings):
     """The list of delimiters that a tokenizer uses to separate content into basic word-tokens."""
 
 
-class StorageSettings(BaseSettings):
+class StorageSettings(BaseModel):
     plugin: str = "json"
     """The plugin to use for storing data."""
 
 
-class ClassifierSettings(BaseSettings):
+class ClassifierSettings(BaseModel):
     plugin: str = "simple"
     """The plugin to use for classification."""
 
 
-class TrainerSettings(BaseSettings):
+class TrainerSettings(BaseModel):
     plugin: str = "simple"
     """The plugin to use for training."""
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="DSPAM_", env_nested_delimiter="_")
+    model_config = SettingsConfigDict(
+        env_prefix="DSPAM_", env_nested_delimiter="_", env_nested_max_split=1
+    )
 
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "WARNING"
+    log_level: LogLevel = "WARNING"
     """The log level to use."""
 
     # Nested settings
