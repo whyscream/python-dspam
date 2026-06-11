@@ -8,18 +8,21 @@ from email.message import EmailMessage, MIMEPart
 from typing import cast
 
 from anyio import AsyncFile
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
 
 from dspam.exceptions import DspamParseError
 from dspam.parse import Parser, ParseResult
+from dspam.settings import BaseDspamSettings
 from dspam.types import Metadata
 
 logger = logging.getLogger(__name__)
 
 
-class EmailParserSettings(BaseSettings):
-    model_config = SettingsConfigDict(
+class EmailParserSettings(BaseDspamSettings):
+    # TODO: remove type annotation after release of: https://github.com/pydantic/pydantic-settings/pull/882
+    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key, unused-ignore]
         env_prefix="DSPAM_PLUGIN_PARSER_EMAIL_",
+        toml_table_header=("dspam", "plugin", "parser", "email"),
     )
 
     ignore_headers: list[str] = []

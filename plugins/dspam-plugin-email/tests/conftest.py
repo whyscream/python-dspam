@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 import pytest
@@ -6,6 +7,20 @@ from anyio import wrap_file
 from dspam.settings import ParserSettings
 
 from dspam_plugin_email.parse import EmailParser, EmailParserSettings
+
+
+@pytest.fixture(autouse=True)
+def empty_config(tmp_path, monkeypatch):
+    """Set the default config root to an empty directory."""
+    for env_var in os.environ.keys():
+        if env_var.startswith("DSPAM_"):
+            monkeypatch.delenv(env_var, raising=False)
+
+    config_path = tmp_path / ".config"
+    data_path = tmp_path / ".data"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(config_path))
+    monkeypatch.setenv("XDG_DATA_HOME", str(data_path))
+    return config_path
 
 
 @pytest.fixture
