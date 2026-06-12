@@ -46,6 +46,8 @@ class EmailParser(Parser):
 
     STRIP_HTML_REGEX = re.compile(r"<[^>]+>")
 
+    plugin_settings: EmailParserSettings | None
+
     async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
         file_content = await fp.read()
         message_parser = PyEmailParser(policy=email.policy.default, _class=EmailMessage)
@@ -96,10 +98,11 @@ class EmailParser(Parser):
     def parse_headers(self, message: EmailMessage) -> Metadata:
         """Extract metadata from email headers"""
         headers = {}
-        ignore_headers = [
-            h.lower()
-            for h in self.settings.plugin_settings.ignore_headers  # type: ignore[union-attr]
-        ]
+        if self.plugin_settings:
+            ignore_headers = [h.lower() for h in self.plugin_settings.ignore_headers]
+        else:
+            ignore_headers = []
+
         for header_name in message.keys():
             if header_name.lower() in ignore_headers:
                 logger.debug(f"Ignoring header: {header_name}")

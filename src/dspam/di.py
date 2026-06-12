@@ -29,9 +29,12 @@ def parser_factory(context: ActivationScope) -> Parser:
     """Factory for DI-supplied Parser instances."""
     pm = context.provider.get(PluginManager)
     settings = context.provider.get(Settings)
-    parser_class: type[Parser] = pm.get_plugin(pm.PARSER, settings.parser.plugin)
+    plugin_settings = settings.parser.plugin_settings
 
-    parser_instance = parser_class(settings=settings.parser)
+    parser_class: type[Parser] = pm.get_plugin(pm.PARSER, settings.parser.plugin)
+    parser_instance = parser_class(
+        settings=settings.parser, plugin_settings=plugin_settings
+    )
     logger.debug(f"Initialized parser: {parser_instance}")
     return parser_instance
 
