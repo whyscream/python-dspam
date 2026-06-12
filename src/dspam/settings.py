@@ -133,6 +133,9 @@ class Settings(BaseDspamSettings, BaseSettings):
         env_nested_delimiter="_",
         env_nested_max_split=1,
         toml_table_header=("dspam",),
+        # TODO: the ignore is needed to allow plugin settings to be read from [dspam.plugin.*.*]
+        #  without having a 'plugin' key in this model. Switching to 'forbid' would be better.
+        extra="ignore",
     )
 
     log_level: LogLevel = "WARNING"
