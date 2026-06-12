@@ -57,6 +57,10 @@ addopts = [
     "--cov",
     "--cov-report=term-missing",
 ]
+filterwarnings = [
+    # This is a warning from pydantic-settings that is caused by tests that run without a config file.
+    "ignore:Config key `toml_table_header` is set in model_config but:UserWarning:pydantic_settings.main",
+]
 
 [tool.coverage.run]
 branch = true
