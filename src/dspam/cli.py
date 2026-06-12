@@ -62,7 +62,7 @@ def plugins_list() -> None:
     pm = provider.get(PluginManager)
     plugins_ = pm.list_plugins()
     settings = provider.get(Settings)
-    settings_dict = settings.dict()
+    settings_dict = settings.model_dump()
 
     console = Console()
     table = Table(show_header=True, header_style="bold magenta", title="Plugins")

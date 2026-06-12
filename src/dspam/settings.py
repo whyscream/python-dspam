@@ -1,5 +1,6 @@
 import os
 import pathlib
+from abc import ABC
 from functools import cached_property
 from typing import cast
 
@@ -21,8 +22,8 @@ def get_config_root() -> pathlib.Path:
     return pathlib.Path(xdg_config_home).expanduser().resolve() / "python-dspam"
 
 
-class BaseDspamSettings(BaseSettings):
-    """Base class that supports an optional TOML file"""
+class BaseDspamSettings(ABC):
+    """Base class for settings that supports an optional TOML file"""
 
     @classmethod
     def settings_customise_sources(
@@ -125,7 +126,7 @@ class TrainerSettings(BaseModel):
         return settings
 
 
-class Settings(BaseDspamSettings):
+class Settings(BaseDspamSettings, BaseSettings):
     # TODO: remove type annotation after release of: https://github.com/pydantic/pydantic-settings/pull/882
     model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key, unused-ignore]
         env_prefix="DSPAM_",
