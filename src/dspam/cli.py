@@ -68,18 +68,18 @@ def plugins_list() -> None:
     table = Table(show_header=True, header_style="bold magenta", title="Plugins")
     table.add_column("Group")
     table.add_column("Name")
-    table.add_column("In use")
+    table.add_column("Active")
     table.add_column("Package")
     table.add_column("Version")
     table.add_column("API version")
 
     for plugin in plugins_:
-        in_use = settings_dict.get(plugin.group, {}).get("plugin") == plugin.name
+        is_active = settings_dict.get(plugin.group, {}).get("plugin") == plugin.name
 
         table.add_row(
             plugin.group,
             plugin.name,
-            str(in_use),
+            "Yes" if is_active else "-",
             plugin.package,
             plugin.version,
             plugin.api_version,
