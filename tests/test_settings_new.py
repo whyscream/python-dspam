@@ -1,192 +1,147 @@
-from abc import ABC
-from pathlib import Path
+import os
 
 import pytest
-from pydantic_settings import (
-    BaseSettings,
-    PydanticBaseSettingsSource,
-    SettingsConfigDict,
-    TomlConfigSettingsSource,
-)
+from pydantic import ValidationError
 from rodi import Container
 
-
-class BaseParserSettings(ABC):
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """
-        Add an optional TOML file to the options for reading configuration. It's read from a file named 'config.toml'
-        in the default configuration dir.
-        """
-        return (
-            init_settings,
-            env_settings,
-            dotenv_settings,
-            file_secret_settings,
-            TomlConfigSettingsSource(settings_cls),
-        )
+from dspam.settings import Settings
+from dspam_plugin_email.parse import EmailParserSettings
 
 
-def get_config_file() -> Path | None:
-    config_file = Path.cwd() / "new_config.toml"
-    if config_file.is_file():
-        return config_file
-
-    return None
+@pytest.fixture(autouse=True)
+def empty_env(mocker):
+    mocker.patch.dict(os.environ, clear=True)
+    yield
 
 
-class NewParserSettings(BaseParserSettings, BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="NEW_PARSER_",
-        env_nested_delimiter="_",
-        env_nested_max_split=1,
-        extra="ignore",
-        toml_file=get_config_file(),
-        toml_table_header=(
-            "new",
-            "parser",
-        ),
-    )
-
-    plugin: str = "default"
-
-
-class NewEmailParserSettings(NewParserSettings):
-    ignore_headers: str = "default"
-
-
-class NewSettings(BaseParserSettings, BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix="NEW_",
-        env_nested_delimiter="_",
-        env_nested_max_split=1,
-        extra="ignore",
-        toml_file=get_config_file(),
-        toml_table_header=("new",),
-    )
-
-    log_level: str = "default"
-    parser: NewParserSettings = NewParserSettings()
+# @pytest.fixture(autouse=True)
+# def empty_config_root(tmp_path, monkeypatch, empty_env):
+#     """Set up an empty config root"""
+#     # TODO: make this work
+#     config_root = tmp_path / ".config"
+#     config_root.mkdir(parents=True, exist_ok=True)
+#     monkeypatch.setenv("XDG_CONFIG_HOME", str(config_root))
+#     yield config_root
 
 
 def test_settings_default():
-
-    settings = NewSettings()
-    assert settings.log_level == "default"
-    assert settings.parser.plugin == "default"
+    settings = Settings()
+    assert settings.log_level == "WARNING"
+    assert settings.parser.plugin == "plaintext"
 
 
 def test_settings_from_env(monkeypatch):
-    monkeypatch.setenv("NEW_PARSER_PLUGIN", "email")
+    monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")
 
-    settings = NewSettings()
+    settings = Settings()
     assert settings.parser.plugin == "email"
+    with pytest.raises(AttributeError):
+        assert settings.parser.ignore_header
+
+
+def test_settings_validate(monkeypatch):
+    monkeypatch.setenv("DSPAM_LOG_LEVEL", "INVALID")
+
+    with pytest.raises(ValidationError):
+        Settings()
 
 
 def test_settings_compose_explicit():
-    # Compose settings with other class explicitly
-    settings = NewSettings(parser=NewEmailParserSettings())
-    assert settings.parser.plugin == "default"
-    assert settings.parser.ignore_headers == "default"
-    assert isinstance(settings.parser, NewEmailParserSettings)
+    settings = Settings(parser=EmailParserSettings())
+    assert settings.parser.plugin == "plaintext"
+    assert settings.parser.ignore_headers == []
 
 
 def test_settings_compose_explicit_from_env(monkeypatch):
-    monkeypatch.setenv("NEW_PARSER_PLUGIN", "email")
-    monkeypatch.setenv("NEW_PARSER_IGNORE_HEADERS", "from-env")
-    settings = NewSettings(parser=NewEmailParserSettings())
+    monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")
+    monkeypatch.setenv("DSPAM_PARSER_IGNORE_HEADERS", '["from-env"]')
+    settings = Settings(parser=EmailParserSettings())
     assert settings.parser.plugin == "email"
-    assert settings.parser.ignore_headers == "from-env"
-    assert isinstance(settings.parser, NewEmailParserSettings)
+    assert settings.parser.ignore_headers == ["from-env"]
+    assert isinstance(settings.parser, EmailParserSettings)
 
 
 @pytest.fixture
 def provider():
-    def new_settings_factory() -> NewSettings:
-        tmp_settings = NewSettings()
+    def settings_factory() -> Settings:
+        tmp_settings = Settings()
         kwargs = {}
         if tmp_settings.parser.plugin == "email":
-            kwargs.update({"parser": NewEmailParserSettings()})
+            kwargs["parser"] = EmailParserSettings()
 
-        return NewSettings(**kwargs)
+        return Settings(**kwargs)
 
     container = Container()
-    container.add_transient_by_factory(new_settings_factory)
+    container.add_transient_by_factory(settings_factory)
 
     return container.build_provider()
 
 
-def test_settings_di_defaults(provider):
-    settings = provider.get(NewSettings)
-    assert settings.parser.plugin == "default"
+def test_provider_settings_defaults(provider):
+    settings = provider.get(Settings)
+    assert settings.parser.plugin == "plaintext"
     with pytest.raises(AttributeError):
         assert settings.parser.ignore_headers
 
 
-def test_settings_di_from_env(monkeypatch, provider):
-    monkeypatch.setenv("NEW_PARSER_PLUGIN", "email")
+def test_provider_settings_from_env(monkeypatch, provider):
+    monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")
 
-    settings = provider.get(NewSettings)
+    settings = provider.get(Settings)
     assert settings.parser.plugin == "email"
-    assert settings.parser.ignore_headers == "default"
+    assert settings.parser.ignore_headers == []
+    assert isinstance(settings.parser, EmailParserSettings)
 
 
-def test_settings_di_from_env_with_plugin_settings(monkeypatch, provider):
-    monkeypatch.setenv("NEW_PARSER_PLUGIN", "email")
-    monkeypatch.setenv("NEW_PARSER_IGNORE_HEADERS", "from-env")
+def test_provider_settings_from_env_with_plugin_settings(monkeypatch, provider):
+    monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")
+    monkeypatch.setenv("DSPAM_PARSER_IGNORE_HEADERS", '["from-env"]')
 
-    di_settings = provider.get(NewSettings)
+    di_settings = provider.get(Settings)
     assert di_settings.parser.plugin == "email"
-    assert di_settings.parser.ignore_headers == "from-env"
+    assert di_settings.parser.ignore_headers == ["from-env"]
 
 
 def test_settings_from_file(tmp_path, provider):
-    config_file = tmp_path / "new_config.toml"
+    config_file = tmp_path / "config.toml"
     config_file.parent.mkdir(parents=True, exist_ok=True)
     config_file.write_text("""
-    [new]
-    log_level = "from-config-file"
-    [new.parser]
+    [dspam]
+    log_level = "CRITICAL"
+    [dspam.parser]
     plugin = "email"
-    ignore_headers = "from-config-file"
+    ignore_headers = ["from-config-file"]
     """)
 
     # Patch model_config with the correct config file
-    NewSettings.model_config["toml_file"] = config_file
-    NewEmailParserSettings.model_config["toml_file"] = config_file
+    Settings.model_config["toml_file"] = config_file
+    EmailParserSettings.model_config["toml_file"] = config_file
 
-    settings = provider.get(NewSettings)
-    assert settings.log_level == "from-config-file"
+    settings = provider.get(Settings)
+    assert settings.log_level == "CRITICAL"
     assert settings.parser.plugin == "email"
-    assert settings.parser.ignore_headers == "from-config-file"
+    assert settings.parser.ignore_headers == ["from-config-file"]
 
 
 def test_settings_env_overrides_file(tmp_path, provider, monkeypatch):
-    config_file = tmp_path / "new_config.toml"
+    config_file = tmp_path / "config.toml"
     config_file.parent.mkdir(parents=True, exist_ok=True)
     config_file.write_text("""
-    [new]
-    log_level = "from-config-file"
-    [new.parser]
+    [dspam]
+    log_level = "DEBUG"
+    [dspam.parser]
     plugin = "email"
-    ignore_headers = "from-config-file"
+    ignore_headers = ["from-config-file"]
     """)
 
     # Patch model_config with the correct config file
-    NewSettings.model_config["toml_file"] = config_file
-    NewEmailParserSettings.model_config["toml_file"] = config_file
+    Settings.model_config["toml_file"] = config_file
+    EmailParserSettings.model_config["toml_file"] = config_file
 
-    monkeypatch.setenv("NEW_LOG_LEVEL", "from-env")
-    monkeypatch.setenv("NEW_PARSER_PLUGIN", "email")
+    monkeypatch.setenv("DSPAM_LOG_LEVEL", "CRITICAL")
+    monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")
 
-    settings = provider.get(NewSettings)
-    assert settings.log_level == "from-env"
+    settings = provider.get(Settings)
+    assert settings.log_level == "CRITICAL"
     assert settings.parser.plugin == "email"
-    assert settings.parser.ignore_headers == "from-config-file"
+    assert settings.parser.ignore_headers == ["from-config-file"]

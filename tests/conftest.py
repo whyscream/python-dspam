@@ -7,7 +7,7 @@ from dspam.settings import StorageSettings
 from dspam.storage import JSONStorage
 
 
-@pytest.fixture(autouse=True)
+# @pytest.fixture(autouse=True)
 def empty_config(tmp_path, monkeypatch):
     """Set the default config root to an empty directory."""
     for env_var in os.environ.keys():

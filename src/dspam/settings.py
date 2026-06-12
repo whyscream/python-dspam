@@ -2,7 +2,6 @@ import os
 import pathlib
 from abc import ABC
 from functools import cached_property
-from typing import cast
 
 from pydantic import BaseModel, computed_field
 from pydantic_settings import (
@@ -22,9 +21,23 @@ def get_config_root() -> pathlib.Path:
     return pathlib.Path(xdg_config_home).expanduser().resolve() / "python-dspam"
 
 
-class BaseDspamSettings(ABC):
-    """Base class for settings that supports an optional TOML file"""
+def get_config_file() -> pathlib.Path | None:
+    """Return the path to the configuration file if it exists, otherwise None."""
+    config_file = get_config_root() / "config.toml"
+    if config_file.is_file():
+        return config_file
+    return None
 
+
+def get_plugin_settings(group_name: str, plugin_name: str) -> type[BaseSettings] | None:
+    from dspam.di import provider
+
+    pm = provider.get(PluginManager)
+    settings_class = pm.get_plugin_settings(group_name, plugin_name)
+    return settings_class
+
+
+class BaseParserSettings(ABC):
     @classmethod
     def settings_customise_sources(
         cls,
@@ -34,49 +47,27 @@ class BaseDspamSettings(ABC):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """
-        Add an optional TOML file to the options for reading configuration. It's read from a file named 'config.toml'
-        in the default configuration dir.
-        """
-        settings_sources = [
+        return (
             init_settings,
             env_settings,
             dotenv_settings,
             file_secret_settings,
-        ]
-
-        config_root = get_config_root()
-        config_path = config_root / "config.toml"
-        print(config_path)
-        if config_path.exists():
-            # TODO: remove type annotation ignore after release of https://github.com/pydantic/pydantic-settings/pull/882
-            toml_settings = TomlConfigSettingsSource(  # type: ignore[call-arg, unused-ignore]
-                settings_cls,
-                toml_file=config_path,
-            )
-            settings_sources.append(toml_settings)
-
-        return tuple(settings_sources)
+            TomlConfigSettingsSource(settings_cls),
+        )
 
 
-def get_plugin_settings(group_name: str, plugin_name: str) -> type[BaseSettings] | None:
-    from dspam.di import provider
+class ParserSettings(BaseParserSettings, BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="DSPAM_PARSER_",
+        env_nested_delimiter="_",
+        env_nested_max_split=1,
+        extra="ignore",
+        toml_file=get_config_file(),
+        toml_table_header=("dspam", "parser"),
+    )
 
-    pm = provider.get(PluginManager)
-    settings_class = pm.get_plugin_settings(group_name, plugin_name)
-    if settings_class:
-        return cast(type[BaseSettings], settings_class())
-    return None
-
-
-class ParserSettings(BaseModel):
     plugin: str = "plaintext"
     """The plugin to use for parsing."""
-
-    @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
-    @cached_property
-    def plugin_settings(self) -> type[BaseSettings] | None:
-        return get_plugin_settings(PluginManager.PARSER, self.plugin)
 
 
 class TokenizerSettings(BaseModel):
@@ -126,16 +117,14 @@ class TrainerSettings(BaseModel):
         return settings
 
 
-class Settings(BaseDspamSettings, BaseSettings):
-    # TODO: remove type annotation after release of: https://github.com/pydantic/pydantic-settings/pull/882
-    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key, unused-ignore]
+class Settings(BaseParserSettings, BaseSettings):
+    model_config = SettingsConfigDict(
         env_prefix="DSPAM_",
         env_nested_delimiter="_",
         env_nested_max_split=1,
-        toml_table_header=("dspam",),
-        # TODO: the ignore is needed to allow plugin settings to be read from [dspam.plugin.*.*]
-        #  without having a 'plugin' key in this model. Switching to 'forbid' would be better.
         extra="ignore",
+        toml_file=get_config_file(),
+        toml_table_header=("dspam",),
     )
 
     log_level: LogLevel = "WARNING"
