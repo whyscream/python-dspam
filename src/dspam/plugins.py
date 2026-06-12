@@ -138,6 +138,9 @@ class PluginManager:
     ) -> type[BaseSettings] | None:
         """
         Get the settings class from the plugin module, if available, and return it.
+
+        We define the Settings module for the plugin as subclass of BaseSettings,
+        coming from the same module as the plugin. When more are found, we always return the first.
         """
         try:
             plugin = self.get_plugin(group_name, plugin_name)
@@ -149,7 +152,8 @@ class PluginManager:
         settings_classes = [
             member
             for _, member in inspect.getmembers(module, inspect.isclass)
-            if issubclass(member, BaseSettings) and member is not BaseSettings
+            if issubclass(member, BaseSettings)
+            and member.__module__ == plugin.__module__
         ]
         if settings_classes:
             return settings_classes[0]

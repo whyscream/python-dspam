@@ -25,6 +25,21 @@ def plugin_manager_factory() -> PluginManager:
     return pm
 
 
+def settings_factory(context: ActivationScope) -> Settings:
+    pm = context.provider.get(PluginManager)
+    tmp_settings = Settings()
+
+    settings_kwargs = {}
+    for group_name in pm.GROUPS:
+        group_settings = getattr(tmp_settings, group_name)
+        plugin_name = group_settings.plugin
+        plugin_settings = pm.get_plugin_settings(group_name, plugin_name)
+        if plugin_settings:
+            settings_kwargs[group_name] = plugin_settings()
+
+    return Settings(**settings_kwargs)
+
+
 def parser_factory(context: ActivationScope) -> Parser:
     """Factory for DI-supplied Parser instances."""
     pm = context.provider.get(PluginManager)
@@ -91,8 +106,8 @@ def trainer_factory(context: ActivationScope) -> Trainer:
 
 _container = Container()
 _container.add_singleton_by_factory(plugin_manager_factory)
+_container.add_singleton_by_factory(settings_factory)
 _container.add_singleton_by_factory(storage_factory)
-_container.register(Settings, instance=Settings())
 
 _container.add_transient_by_factory(parser_factory)
 _container.add_transient_by_factory(tokenizer_factory)
