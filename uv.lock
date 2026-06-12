@@ -193,6 +193,16 @@ wheels = [
 [[package]]
 name = "dspam-plugin-email"
 source = { editable = "plugins/dspam-plugin-email" }
+dependencies = [
+    { name = "anyio" },
+    { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anyio", specifier = ">=4.13.0" },
+    { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=afda1f71420bee772a0a0be9e6f6fac014df9e25" },
+]
 
 [[package]]
 name = "executing"

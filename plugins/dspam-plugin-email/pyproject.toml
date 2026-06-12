@@ -14,7 +14,10 @@ authors = [
     { name = "Tom Hendrikx", email = "tom@whyscream.net" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "anyio>=4.13.0",
+    "pydantic_settings>=2.14.1",
+]
 
 [project.entry-points."dspam.parser"]
 email = "dspam_plugin_email.parse:EmailParser"
