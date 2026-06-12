@@ -84,3 +84,20 @@ async def test_parse_email_attachment_error(mf, email_parser):
         DspamParseError, match="Email does not contain a supported body part"
     ):
         await email_parser(attachment_message)
+
+
+async def test_parse_email_ignore_headers(mf, email_parser):
+    message = await mf("html-only.eml")
+    result = await email_parser(message)
+    assert list(result.metadata.keys()) == [
+        "From",
+        "Date",
+        "MIME-Version",
+        "Content-Type",
+    ]
+
+    # Note: the 'Mime-Version' header is ignored case-insensitively.
+    await message.seek(0)
+    email_parser.settings.plugin_settings.ignore_headers = ["Date", "mime-version"]
+    result = await email_parser(message)
+    assert list(result.metadata.keys()) == ["From", "Content-Type"]

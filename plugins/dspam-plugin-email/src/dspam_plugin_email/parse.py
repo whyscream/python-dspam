@@ -96,8 +96,12 @@ class EmailParser(Parser):
     def parse_headers(self, message: EmailMessage) -> Metadata:
         """Extract metadata from email headers"""
         headers = {}
+        ignore_headers = [
+            h.lower()
+            for h in self.settings.plugin_settings.ignore_headers  # type: ignore[union-attr]
+        ]
         for header_name in message.keys():
-            if header_name in self.settings.plugin_settings.ignore_headers:  # type: ignore[union-attr]
+            if header_name.lower() in ignore_headers:
                 logger.debug(f"Ignoring header: {header_name}")
                 continue
             header_value = message.get_all(header_name)
