@@ -12,7 +12,7 @@ from cyclopts import App, Parameter, validators
 from rich.console import Console
 from rich.table import Table
 
-from dspam import Verdict
+from dspam.types import Verdict
 from dspam.di import provider
 from dspam.main import classify, train
 from dspam.plugins import PluginManager
@@ -47,7 +47,7 @@ async def train_from_file(
     ],
     classification: Annotated[
         Verdict,
-        Parameter(alias="-c", help="Classification of the file (ham or spam)"),
+        Parameter(alias="-c", help="Classification of the file (innocent or spam)"),
     ],
 ) -> None:
     await train(file_path=file_path, classification=classification)

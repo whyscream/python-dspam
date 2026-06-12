@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from dspam import IS_HAM, IS_SPAM
+from dspam import IS_INNOCENT, IS_SPAM
 from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
 
@@ -25,7 +25,7 @@ class Classifier(ABC):
 
 class DummyClassifier(Classifier):
     """
-    A dummy classifier that classifies a message as spam if it finds the word "spam" in any of its tokens, and as ham otherwise.
+    A dummy classifier that classifies a message as spam if it finds the word "spam" in any of its tokens, and as innocent otherwise.
     """
 
     API_VERSION: str = "1.0"
@@ -34,7 +34,7 @@ class DummyClassifier(Classifier):
         for token in tokens:
             if "spam" in token:
                 return IS_SPAM
-        return IS_HAM
+        return IS_INNOCENT
 
 
 class SimpleClassifier(Classifier):
@@ -50,15 +50,17 @@ class SimpleClassifier(Classifier):
             token_data = await self.storage.get_token(token)
             if token_data is None:
                 continue
-            if token_data.spam_hits > token_data.ham_hits:
+            if token_data.spam_hits > token_data.innocent_hits:
                 token_results.append(IS_SPAM)
-            elif token_data.spam_hits < token_data.ham_hits:
-                token_results.append(IS_HAM)
+            elif token_data.spam_hits < token_data.innocent_hits:
+                token_results.append(IS_INNOCENT)
 
         spam_count = token_results.count(IS_SPAM)
-        ham_count = token_results.count(IS_HAM)
-        logger.info("Classifier token results: %d spam, %d ham", spam_count, ham_count)
-        if spam_count > ham_count:
+        innocent_count = token_results.count(IS_INNOCENT)
+        logger.info(
+            "Classifier token results: %d spam, %d innocent", spam_count, innocent_count
+        )
+        if spam_count > innocent_count:
             return IS_SPAM
         else:
-            return IS_HAM
+            return IS_INNOCENT

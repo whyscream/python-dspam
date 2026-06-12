@@ -1,13 +1,13 @@
 """
 Token storage is basically saving each token with 2 counts:
-- the number of ham hits
+- the number of innocent hits
 - and the number of spam hits
 
 Additional metadata can be added:
 - timestamp of last update (while training)
 - timestamp when the token was last seen (while classifying)
 - hash of the token, to speed up lookups for large tokens
-- token statistics: probablity, ham/spam ratio, etc
+- token statistics: probablity, innocent/spam ratio, etc
 """
 
 import os
@@ -35,7 +35,7 @@ class TokenData:
     token: str
     token_hash: str = ""
     spam_hits: int = 0
-    ham_hits: int = 0
+    innocent_hits: int = 0
     last_seen: datetime | None = None
     last_updated: datetime | None = None
 
@@ -43,8 +43,8 @@ class TokenData:
         self.spam_hits += 1
         self.last_updated = datetime.now(timezone.utc)
 
-    def add_ham_hit(self) -> None:
-        self.ham_hits += 1
+    def add_innocent_hit(self) -> None:
+        self.innocent_hits += 1
         self.last_updated = datetime.now(timezone.utc)
 
 
@@ -69,9 +69,9 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def store_ham_token(self, token: str) -> None:
+    async def store_innocent_token(self, token: str) -> None:
         """
-        Add a ham token to the storage.
+        Add an innocent token to the storage.
 
         This method may keep the data in memory, use persist() to save.
         """
@@ -138,11 +138,11 @@ class JSONStorage(Storage):
         token_data.add_spam_hit()
         self.data[token] = token_data
 
-    async def store_ham_token(self, token: str) -> None:
+    async def store_innocent_token(self, token: str) -> None:
         await self.open()
 
         token_data = self.data.get(token, TokenData(token=token))
-        token_data.add_ham_hit()
+        token_data.add_innocent_hit()
         self.data[token] = token_data
 
     async def get_token(self, token: str) -> TokenData | None:

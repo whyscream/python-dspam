@@ -12,3 +12,6 @@ type Metadata = Mapping[str, str | Sequence[str]]
 
 type TokenList = list[str]
 """TokenList as produced by a tokenizer."""
+
+Verdict = Literal["innocent", "spam"]
+"""Outcome of a classification."""

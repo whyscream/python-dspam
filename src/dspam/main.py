@@ -2,7 +2,7 @@ import logging
 
 from anyio import Path
 
-from dspam import Verdict
+from dspam.types import Verdict
 from dspam.classify import Classifier
 from dspam.di import provider
 from dspam.parse import Parser

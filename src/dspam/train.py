@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
-from dspam import IS_SPAM, Verdict
+from dspam import IS_SPAM
 from dspam.settings import TrainerSettings
 from dspam.storage import Storage
+from dspam.types import Verdict
 
 
 class Trainer(ABC):
@@ -33,6 +34,6 @@ class SimpleTrainer(Trainer):
             if classification == IS_SPAM:
                 await self.storage.store_spam_token(token)
             else:
-                await self.storage.store_ham_token(token)
+                await self.storage.store_innocent_token(token)
 
         await self.storage.persist()

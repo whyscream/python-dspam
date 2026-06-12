@@ -41,9 +41,9 @@ async def test_json_storage_save_token(storage):
     assert "spam-token" in storage.data
     assert storage.data["spam-token"].spam_hits == 1
 
-    await storage.store_ham_token("ham-token")
-    assert "ham-token" in storage.data
-    assert storage.data["ham-token"].ham_hits == 1
+    await storage.store_innocent_token("innocent-token")
+    assert "innocent-token" in storage.data
+    assert storage.data["innocent-token"].innocent_hits == 1
 
 
 async def test_json_storage_save_token_repeated(storage):
@@ -58,7 +58,7 @@ async def test_json_storage_save_token_repeated(storage):
 
 async def test_json_storage_persist_and_open(storage):
     await storage.store_spam_token("spam-token")
-    await storage.store_ham_token("ham-token")
+    await storage.store_innocent_token("innocent-token")
     await storage.persist()
 
     # Create a new instance to test that the data is loaded correctly
@@ -69,5 +69,5 @@ async def test_json_storage_persist_and_open(storage):
     assert "spam-token" in new_storage.data
     assert new_storage.data["spam-token"].spam_hits == 1
 
-    assert "ham-token" in new_storage.data
-    assert new_storage.data["ham-token"].ham_hits == 1
+    assert "innocent-token" in new_storage.data
+    assert new_storage.data["innocent-token"].innocent_hits == 1
