@@ -3,6 +3,7 @@ CLI interface for python DSPAM
 
 """
 
+import json
 import logging
 from importlib.metadata import version
 from typing import Annotated
@@ -90,8 +91,9 @@ def plugins_list() -> None:
 @cli.command(name="config")
 def dump_config() -> None:
     settings = Settings()
+    settings_dict = {"dspam": settings.model_dump()}
     console = Console()
-    console.print(settings.model_dump_json(indent=4))
+    console.print(json.dumps(settings_dict, indent=4))
 
 
 def main() -> None:
