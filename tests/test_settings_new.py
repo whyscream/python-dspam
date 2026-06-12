@@ -135,8 +135,8 @@ def test_settings_env_overrides_file(tmp_path, provider, monkeypatch):
     """)
 
     # Patch model_config with the correct config file
-    Settings.model_config["toml_file"] = config_file
-    EmailParserSettings.model_config["toml_file"] = config_file
+    monkeypatch.setitem(Settings.model_config, "toml_file", config_file)
+    monkeypatch.setitem(EmailParserSettings.model_config, "toml_file", config_file)
 
     monkeypatch.setenv("DSPAM_LOG_LEVEL", "CRITICAL")
     monkeypatch.setenv("DSPAM_PARSER_PLUGIN", "email")

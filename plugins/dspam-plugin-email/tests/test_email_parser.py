@@ -4,6 +4,7 @@ import pytest
 from anyio import wrap_file
 
 from dspam.exceptions import DspamParseError
+from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
 
 async def test_parse_email_headers(email_parser, message):
@@ -98,6 +99,8 @@ async def test_parse_email_ignore_headers(mf, email_parser):
 
     # Note: the 'Mime-Version' header is ignored case-insensitively.
     await message.seek(0)
-    email_parser.settings.plugin_settings.ignore_headers = ["Date", "mime-version"]
+    email_parser = EmailParser(
+        EmailParserSettings(ignore_headers=["Date", "mime-version"])
+    )
     result = await email_parser(message)
     assert list(result.metadata.keys()) == ["From", "Content-Type"]

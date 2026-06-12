@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
 
 from anyio import AsyncFile
 
@@ -17,20 +16,14 @@ class ParseResult:
 class Parser(ABC):
     API_VERSION: str
 
-    def __init__(
-        self,
-        settings: ParserSettings,
-        plugin_settings: Any = None,
-    ):
+    def __init__(self, settings: ParserSettings):
         """
         Initialize a new Parser
 
         Args:
             settings: The settings from the [dspam.parser] section of the config.
-            plugin_settings: The plugin settings from the [dspam.plugin.parser.<plugin name>] section of the config, if applicable.
         """
         self.settings = settings
-        self.plugin_settings = plugin_settings
 
     @abstractmethod
     async def __call__(self, fp: AsyncFile[str]) -> ParseResult:

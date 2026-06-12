@@ -4,7 +4,6 @@ import pathlib
 import pytest
 from anyio import wrap_file
 
-from dspam.settings import ParserSettings
 
 from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
@@ -25,8 +24,7 @@ def empty_config(tmp_path, monkeypatch):
 
 @pytest.fixture
 def email_parser():
-    settings = ParserSettings()
-    settings.plugin_settings = EmailParserSettings()
+    settings = EmailParserSettings()
     return EmailParser(settings)
 
 

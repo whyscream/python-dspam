@@ -27,7 +27,7 @@ def test_settings_validate(monkeypatch):
         Settings()
 
 
-def test_settings_from_config_file(empty_config):
+def test_settings_from_config_file(empty_config, monkeypatch):
     config_path = empty_config / "python-dspam/config.toml"
     config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text("""
@@ -36,6 +36,8 @@ def test_settings_from_config_file(empty_config):
     [dspam.parser]
     plugin = "foo"
     """)
+
+    monkeypatch.setitem(Settings.model_config, "toml_file", config_path)
 
     settings = Settings()
     assert settings.log_level == "CRITICAL"
