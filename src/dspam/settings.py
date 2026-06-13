@@ -62,6 +62,7 @@ class ParserSettings(BaseParserSettings, BaseSettings):
         env_nested_delimiter="_",
         env_nested_max_split=1,
         extra="ignore",
+        polymorphic_serialization=True,
         toml_file=get_config_file(),
         toml_table_header=("dspam", "parser"),
     )
@@ -123,6 +124,7 @@ class Settings(BaseParserSettings, BaseSettings):
         env_nested_delimiter="_",
         env_nested_max_split=1,
         extra="ignore",
+        polymorphic_serialization=True,
         toml_file=get_config_file(),
         toml_table_header=("dspam",),
     )

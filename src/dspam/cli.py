@@ -90,7 +90,7 @@ def plugins_list() -> None:
 
 @cli.command(name="config")
 def dump_config() -> None:
-    settings = Settings()
+    settings = provider.get(Settings)
     settings_dict = {"dspam": settings.model_dump()}
     console = Console()
     console.print(json.dumps(settings_dict, indent=4))
