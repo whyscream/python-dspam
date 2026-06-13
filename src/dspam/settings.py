@@ -57,7 +57,8 @@ class BaseParserSettings(ABC):
 
 
 class ParserSettings(BaseParserSettings, BaseSettings):
-    model_config = SettingsConfigDict(
+    # TODO: Remove type ignore after release of: https://github.com/pydantic/pydantic-settings/pull/882
+    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key, unused-ignore]
         env_prefix="DSPAM_PARSER_",
         env_nested_delimiter="_",
         env_nested_max_split=1,
@@ -119,7 +120,8 @@ class TrainerSettings(BaseModel):
 
 
 class Settings(BaseParserSettings, BaseSettings):
-    model_config = SettingsConfigDict(
+    # TODO: Remove type ignore after release of: https://github.com/pydantic/pydantic-settings/pull/882
+    model_config = SettingsConfigDict(  # type: ignore[typeddict-unknown-key, unused-ignore]
         env_prefix="DSPAM_",
         env_nested_delimiter="_",
         env_nested_max_split=1,
