@@ -38,8 +38,8 @@ test = [
 members = ["plugins/*"]
 
 [tool.uv.sources]
-# TODO: remove after release of: https://github.com/pydantic/pydantic-settings/pull/882
-pydantic-settings = { git = "https://github.com/pydantic/pydantic-settings.git", rev = "afda1f71420bee772a0a0be9e6f6fac014df9e25" }
+# TODO: remove after release of: https://github.com/pydantic/pydantic-settings/pull/882 (and PRs #886 and #887)
+pydantic-settings = { git = "https://github.com/whyscream/pydantic-settings.git", rev = "9e01690834c20999f9549fb87fd8d0c9a87cce60" }
 
 [tool.mypy]
 python_version = 3.14
