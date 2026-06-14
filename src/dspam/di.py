@@ -37,7 +37,7 @@ def settings_factory(context: ActivationScope) -> Settings:
         if plugin_settings:
             settings_kwargs[group_name] = plugin_settings()
 
-    return Settings(**settings_kwargs)
+    return Settings(**settings_kwargs)  # type: ignore[arg-type]
 
 
 def parser_factory(context: ActivationScope) -> Parser:

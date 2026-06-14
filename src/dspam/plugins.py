@@ -39,13 +39,13 @@ class PluginInfo:
 
 class PluginManager:
     # Plugin groups
-    PARSER = "parser"
-    TOKENIZER = "tokenizer"
-    CLASSIFIER = "classifier"
-    TRAINER = "trainer"
-    STORAGE = "storage"
+    PARSER: str = "parser"
+    TOKENIZER: str = "tokenizer"
+    CLASSIFIER: str = "classifier"
+    TRAINER: str = "trainer"
+    STORAGE: str = "storage"
 
-    GROUPS = [
+    GROUPS: list[str] = [
         PARSER,
         TOKENIZER,
         CLASSIFIER,
