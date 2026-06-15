@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 from dspam_plugin_email.parse import EmailParserSettings
 
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 [build-system]
 requires = [ "setuptools>=41", "wheel", "setuptools-git-versioning>=3.0,<4", ]
 build-backend = "setuptools.build_meta"
@@ -9,6 +11,13 @@ enabled = true
 name = "python-dspam"
 requires-python = ">=3.14"
 dynamic = ["version"]
+readme = "README.md"
+authors = [
+    { name = "Tom Hendrikx", email = "tom@whyscream.net" }
+]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+
 dependencies = [
     "anyio>=4.13.0",
     "cyclopts>=4.11.0",
@@ -18,9 +27,6 @@ dependencies = [
     "rich>=15.0.0",
     "rodi>=2.1.0",
 ]
-
-[project.entry-points.console_scripts]
-dspam = "dspam.cli:main"
 
 [dependency-groups]
 dev = [
@@ -33,6 +39,10 @@ test = [
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
 ]
+
+[project.entry-points.console_scripts]
+dspam = "dspam.cli:main"
+
 
 [tool.uv.workspace]
 members = ["plugins/*"]

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 Token storage is basically saving each token with 2 counts:
 - the number of innocent hits

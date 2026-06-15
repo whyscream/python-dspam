@@ -129,3 +129,9 @@ It's also a fun project for me to learn a bit more about machine learning, natur
   - plugin architecture (entry points, pluggy, https://oneuptime.com/blog/post/2026-01-30-python-plugin-systems/view)
   - dependency injection (https://github.com/sfermigier/awesome-dependency-injection-in-python)
   - CLI alternatives to `argparse` or `click`
+
+# License
+
+This project is licensed under the BSD-3-Clause License. See the [LICENSE](LICENSE) file for details.
+
+Note that the original DSPAM code was licensed under the **GNU AFFERO GENERAL PUBLIC LICENSE Version 3**, but this implementation is a complete rewrite in Python. It does not contain any code from the original DSPAM project, only ideas , terminology and concepts.

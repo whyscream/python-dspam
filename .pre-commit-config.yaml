@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
@@ -14,7 +16,7 @@ repos:
       - id: check-illegal-windows-names
       - id: debug-statements
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.16
+    rev: v0.15.17
     hooks:
       - id: ruff-check
         types_or: [ "python", "pyproject" ]
@@ -30,7 +32,7 @@ repos:
     hooks:
       - id: mypy
         # Redirect all configuration settings to pyproject.toml
-        args: ['--config-file=pyproject.toml']
+        args: [ "--config-file=pyproject.toml" ]
         additional_dependencies:
           - anyio
           - orjson
@@ -42,3 +44,16 @@ repos:
             (?x)(
                 (^|/)tests/.*\.py$
             )
+  - repo: https://github.com/johannsdg/pre-commit-license-headers.git
+    rev: d53087d331942f263cb553dc67b0e51ffa3a3481
+    hooks:
+      - id: check-license-headers
+        args: [ "--template", "SPDX-License-Identifier: BSD-3-Clause" ]
+        exclude: |
+            (?x)^(
+                .pre-commit-config.yaml|
+                LICENSE|
+                plugins/dspam-plugin-email/README.md|
+                README.md|
+                uv.lock
+            )$

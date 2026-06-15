@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 from dspam import IS_INNOCENT
 from dspam.settings import TrainerSettings
 from dspam.storage import TokenData

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 import importlib.metadata
 
 __version__ = importlib.metadata.version("python-dspam")

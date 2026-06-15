@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 [tasks.install]
 description = "Install dependencies"
 run = "uv sync --all-packages"

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 A simple plugin system that allows switching between different implementations of the same interface. This is useful
 for allowing users to choose between different algorithms or implementations of a feature, without having to change
