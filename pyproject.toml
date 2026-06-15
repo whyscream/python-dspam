@@ -54,7 +54,6 @@ exclude = [
 minversion = "9.0"
 anyio_mode = "auto"
 addopts = [
-    "--cov",
     "--cov-report=term-missing",
     "--pdbcls=IPython.terminal.debugger:TerminalPdb",
 ]

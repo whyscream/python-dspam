@@ -1,0 +1,27 @@
+[tasks.install]
+description = "Install dependencies"
+run = "uv sync --all-packages"
+
+[tasks.lint]
+wait_for = ["install"]
+description = "Run linters"
+run = "pre-commit run -a"
+
+[tasks.test]
+wait_for = ["install"]
+description = "Run tests with pytest"
+run = "pytest --durations 3 --cov"
+
+[tasks.all]
+depends = ["install", "lint", "test"]
+description = "Run all code checking tasks"
+
+[tasks.train-email-classifier]
+description = "Train the email classifier"
+alias = "train"
+depends = ["install"]
+env = { DSPAM_PARSER_PLUGIN = "email"}
+run = '''
+  find testdata/innocent/ -type f | xargs -n1 python -m dspam train --classification innocent --file-path
+  find testdata/spam/ -type f | xargs -n1 python -m dspam train --classification spam --file-path
+'''
