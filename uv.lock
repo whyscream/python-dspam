@@ -201,7 +201,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4.13.0" },
-    { name = "pydantic-settings", git = "https://github.com/whyscream/pydantic-settings.git?rev=9e01690834c20999f9549fb87fd8d0c9a87cce60" },
+    { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c" },
 ]
 
 [[package]]
@@ -630,7 +630,7 @@ wheels = [
 [[package]]
 name = "pydantic-settings"
 version = "2.14.1"
-source = { git = "https://github.com/whyscream/pydantic-settings.git?rev=9e01690834c20999f9549fb87fd8d0c9a87cce60#9e01690834c20999f9549fb87fd8d0c9a87cce60" }
+source = { git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c#9941cae4c633089b7bdb682515c423d0aa80b46c" }
 dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -731,7 +731,7 @@ requires-dist = [
     { name = "cyclopts", specifier = ">=4.11.0" },
     { name = "orjson", specifier = ">=3.11.9" },
     { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "pydantic-settings", git = "https://github.com/whyscream/pydantic-settings.git?rev=9e01690834c20999f9549fb87fd8d0c9a87cce60" },
+    { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "rodi", specifier = ">=2.1.0" },
 ]
