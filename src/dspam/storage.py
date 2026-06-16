@@ -38,8 +38,12 @@ class TokenData:
     token_hash: str = ""
     spam_hits: int = 0
     innocent_hits: int = 0
+    seen_hits: int = 0
     last_seen: datetime | None = None
     last_updated: datetime | None = None
+
+    def __str__(self) -> str:
+        return f"'{self.token}' spam_hits={self.spam_hits} innocent_hits={self.innocent_hits}"
 
     def add_spam_hit(self) -> None:
         self.spam_hits += 1
@@ -48,6 +52,10 @@ class TokenData:
     def add_innocent_hit(self) -> None:
         self.innocent_hits += 1
         self.last_updated = datetime.now(timezone.utc)
+
+    def seen(self) -> None:
+        self.seen_hits += 1
+        self.last_seen = datetime.now(timezone.utc)
 
 
 class Storage(ABC):
@@ -64,7 +72,7 @@ class Storage(ABC):
     @abstractmethod
     async def store_spam_token(self, token: str) -> None:
         """
-        Add a spam token to the storage.
+        Save a spam token to the storage. This adds new tokens or updates spam count for existing tokens.
 
         This method may keep the data in memory, use persist() to save.
         """
@@ -73,7 +81,16 @@ class Storage(ABC):
     @abstractmethod
     async def store_innocent_token(self, token: str) -> None:
         """
-        Add an innocent token to the storage.
+        Save an innocent token to the storage. This adds new tokens or updates innocent count for existing tokens.
+
+        This method may keep the data in memory, use persist() to save.
+        """
+        pass
+
+    @abstractmethod
+    async def store_token_seen(self, token: str) -> None:
+        """
+        Update the last seen timestamp for the token. This only updates the last seen timestamp for existing tokens, and does not add new tokens.
 
         This method may keep the data in memory, use persist() to save.
         """
@@ -146,6 +163,14 @@ class JSONStorage(Storage):
         token_data = self.data.get(token, TokenData(token=token))
         token_data.add_innocent_hit()
         self.data[token] = token_data
+
+    async def store_token_seen(self, token: str) -> None:
+        await self.open()
+
+        token_data = self.data.get(token)
+        if token_data:
+            token_data.seen()
+            self.data[token] = token_data
 
     async def get_token(self, token: str) -> TokenData | None:
         await self.open()

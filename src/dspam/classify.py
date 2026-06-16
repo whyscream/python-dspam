@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import logging
+import random
 from abc import ABC, abstractmethod
 
-from dspam import IS_INNOCENT, IS_SPAM
+
+from dspam import IS_INNOCENT, IS_SPAM, IS_UNKNOWN
 from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
 
@@ -46,23 +48,54 @@ class SimpleClassifier(Classifier):
 
     API_VERSION: str = "1.0"
 
+    LOG_DEBUG_TOKENS = 10
+    # TODO: how to make this flexible
+    """
+    The number of tokens to log for debugging purposes.
+
+    The tokens are logged at level DEBUG. For each verdict (innocent, ham), this amount of tokens will be logged.
+    With value 0, no tokens are logged.
+    With value -1, all tokens are logged.
+    """
+
     async def __call__(self, tokens: list[str]) -> str:
-        token_results = []
+        spam_tokens = []
+        innocent_tokens = []
+        unknown_tokens = []
+
         for token in tokens:
             token_data = await self.storage.get_token(token)
+            await self.storage.store_token_seen(token)
             if token_data is None:
-                continue
-            if token_data.spam_hits > token_data.innocent_hits:
-                token_results.append(IS_SPAM)
-            elif token_data.spam_hits < token_data.innocent_hits:
-                token_results.append(IS_INNOCENT)
+                unknown_tokens.append(token)
+            elif token_data.spam_hits > token_data.innocent_hits:
+                spam_tokens.append(token)
+            else:
+                innocent_tokens.append(token)
 
-        spam_count = token_results.count(IS_SPAM)
-        innocent_count = token_results.count(IS_INNOCENT)
+        spam_count = len(spam_tokens)
+        innocent_count = len(innocent_tokens)
+        unknown_count = len(unknown_tokens)
+
+        # Log some tokens for debugging purposes
+        await self.log_debug_tokens(spam_tokens, IS_SPAM)
+        await self.log_debug_tokens(innocent_tokens, IS_INNOCENT)
+        await self.log_debug_tokens(unknown_tokens, IS_UNKNOWN)
+
         logger.info(
-            "Classifier token results: %d spam, %d innocent", spam_count, innocent_count
+            f"Classifier token results: spam={spam_count}, innocent={innocent_count}, unknown={unknown_count}"
         )
         if spam_count > innocent_count:
             return IS_SPAM
         else:
             return IS_INNOCENT
+
+    async def log_debug_tokens(self, tokens: list[str], verdict: str) -> None:
+        log_debug_tokens = self.LOG_DEBUG_TOKENS if self.LOG_DEBUG_TOKENS >= 0 else 1_000_000
+        token_count = len(tokens)
+        for token in random.sample(tokens, min(log_debug_tokens, token_count)):
+            token_data = await self.storage.get_token(token)
+            if token_data:
+                logger.debug(f"Token: {verdict=} {token_data}")
+            else:
+                logger.debug(f"Token: {verdict=} '{token}'")
