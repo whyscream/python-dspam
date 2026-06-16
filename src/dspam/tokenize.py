@@ -3,9 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from dspam.types import Metadata, TokenList
-
 from dspam.settings import TokenizerSettings
+from dspam.types import Metadata, TokenList
 
 
 class Tokenizer(ABC):
@@ -34,7 +33,7 @@ class WordTokenizer(Tokenizer):
     METADATA_IGNORE_DELIMITERS: str = ".:"
     """The delimiters to filter from the default set when tokenizing metadata values."""
 
-    METADATA_TOKEN_SEPARATOR: str = "*"
+    METADATA_TOKEN_SEPARATOR: str = "*"  # noqa: S105
     """The separator that is used when composing key-value tokens from metadata."""
 
     async def __call__(self, content: str, metadata: Metadata) -> TokenList:
@@ -61,21 +60,15 @@ class WordTokenizer(Tokenizer):
         metadata_tokens = []
         for key, value in metadata.items():
             if isinstance(value, str):
-                value_tokens = self.tokenize_content(
-                    value, self.METADATA_IGNORE_DELIMITERS
-                )
+                value_tokens = self.tokenize_content(value, self.METADATA_IGNORE_DELIMITERS)
                 metadata_tokens.extend(self.make_metadata_token(key, value_tokens))
 
             elif isinstance(value, list):
                 for item in value:
-                    value_tokens = self.tokenize_content(
-                        item, self.METADATA_IGNORE_DELIMITERS
-                    )
+                    value_tokens = self.tokenize_content(item, self.METADATA_IGNORE_DELIMITERS)
                     metadata_tokens.extend(self.make_metadata_token(key, value_tokens))
 
         return metadata_tokens
 
     def make_metadata_token(self, key: str, value_tokens: TokenList) -> TokenList:
-        return [
-            f"{key}{self.METADATA_TOKEN_SEPARATOR}{token}" for token in value_tokens
-        ]
+        return [f"{key}{self.METADATA_TOKEN_SEPARATOR}{token}" for token in value_tokens]

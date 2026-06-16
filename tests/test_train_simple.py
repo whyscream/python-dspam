@@ -18,13 +18,9 @@ async def test_train_simple_with_classification(storage):
     await trainer(tokens=["token1", "token2"], classification=IS_INNOCENT)
 
     token1_data = await storage.get_token("token1")
-    assert token1_data.innocent_hits == 2, (
-        "token1 should have an additional innocent hit"
-    )
+    assert token1_data.innocent_hits == 2, "token1 should have an additional innocent hit"
     assert token1_data.spam_hits == 3, "token1 should have unchanged spam hit"
 
     token2_data = await storage.get_token("token2")
-    assert token2_data.innocent_hits == 2, (
-        "token2 should have an additional innocent hit"
-    )
+    assert token2_data.innocent_hits == 2, "token2 should have an additional innocent hit"
     assert token2_data.spam_hits == 1, "token2 should have unchanged spam hit"

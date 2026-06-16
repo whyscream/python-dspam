@@ -4,12 +4,12 @@ import logging
 
 from anyio import Path
 
-from dspam.types import Verdict
 from dspam.classify import Classifier
 from dspam.di import provider
 from dspam.parse import Parser
 from dspam.tokenize import Tokenizer
 from dspam.train import Trainer
+from dspam.types import Verdict
 
 logger = logging.getLogger(__name__)
 

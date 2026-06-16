@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
-from dspam.tokenize import WordTokenizer
 from dspam.settings import TokenizerSettings
+from dspam.tokenize import WordTokenizer
 
 
 async def test_tokenize_email_words(email_parser, message):

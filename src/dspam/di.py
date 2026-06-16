@@ -57,9 +57,7 @@ def tokenizer_factory(context: ActivationScope) -> Tokenizer:
     """Factory for DI-supplied Tokenizer instances."""
     pm = context.provider.get(PluginManager)
     settings = context.provider.get(Settings)
-    tokenizer_class: type[Tokenizer] = pm.get_plugin(
-        pm.TOKENIZER, settings.tokenizer.plugin
-    )
+    tokenizer_class: type[Tokenizer] = pm.get_plugin(pm.TOKENIZER, settings.tokenizer.plugin)
 
     tokenizer_instance = tokenizer_class(settings=settings.tokenizer)
     logger.debug(f"Initialized tokenizer: {tokenizer_instance}")
@@ -73,9 +71,7 @@ def storage_factory(context: ActivationScope) -> Storage:
     storage_class: type[Storage] = pm.get_plugin(pm.STORAGE, settings.storage.plugin)
 
     storage_root = get_storage_root()
-    storage_instance = storage_class(
-        settings=settings.storage, storage_root=storage_root
-    )
+    storage_instance = storage_class(settings=settings.storage, storage_root=storage_root)
     logger.debug(f"Initialized storage: {storage_instance}")
     return storage_instance
 
@@ -84,9 +80,7 @@ def classify_factory(context: ActivationScope) -> Classifier:
     """Factory for DI-supplied Classifier instances."""
     pm = context.provider.get(PluginManager)
     settings = context.provider.get(Settings)
-    classification_class: type[Classifier] = pm.get_plugin(
-        pm.CLASSIFIER, settings.classifier.plugin
-    )
+    classification_class: type[Classifier] = pm.get_plugin(pm.CLASSIFIER, settings.classifier.plugin)
     storage = context.provider.get(Storage)
 
     classifier_instance = classification_class(settings.classifier, storage)

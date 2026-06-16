@@ -4,9 +4,9 @@ import io
 
 import pytest
 from anyio import wrap_file
+from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
 from dspam.exceptions import DspamParseError
-from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
 
 async def test_parse_email_headers(email_parser, message):
@@ -34,9 +34,7 @@ async def test_parse_email_headers(email_parser, message):
     assert result.metadata["From"] == "Mary Benysek <workroom@frenkelfirm.com>", (
         "From header should be parsed correctly"
     )
-    assert result.metadata["Subject"] == "I saw your name on the list", (
-        "Single line subject should be parsed correctly"
-    )
+    assert result.metadata["Subject"] == "I saw your name on the list", "Single line subject should be parsed correctly"
 
     received = result.metadata["Received"]
     assert isinstance(received, list), "Received should be a list of multiple headers"
@@ -83,9 +81,7 @@ async def test_parse_email_html_only(mf, email_parser):
 
 async def test_parse_email_attachment_error(mf, email_parser):
     attachment_message = await mf("mime-attachment-only.eml")
-    with pytest.raises(
-        DspamParseError, match="Email does not contain a supported body part"
-    ):
+    with pytest.raises(DspamParseError, match="Email does not contain a supported body part"):
         await email_parser(attachment_message)
 
 
@@ -101,8 +97,6 @@ async def test_parse_email_ignore_headers(mf, email_parser):
 
     # Note: the 'Mime-Version' header is ignored case-insensitively.
     await message.seek(0)
-    email_parser = EmailParser(
-        EmailParserSettings(ignore_headers=["Date", "mime-version"])
-    )
+    email_parser = EmailParser(EmailParserSettings(ignore_headers=["Date", "mime-version"]))
     result = await email_parser(message)
     assert list(result.metadata.keys()) == ["From", "Content-Type"]

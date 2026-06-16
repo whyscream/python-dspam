@@ -20,8 +20,8 @@ plugin API that it implements. This allows for compatibility checks when loading
 import importlib.metadata
 import inspect
 import logging
-from dataclasses import dataclass
 from collections.abc import Generator
+from dataclasses import dataclass
 
 from pydantic_settings import BaseSettings
 
@@ -92,9 +92,7 @@ class PluginManager:
                     self.plugins[group][entry_point.name] = plugin_class
                     logger.debug(f"Loaded plugin: {group}:{entry_point.name}")
                 except Exception as err:
-                    logger.error(
-                        f"Error loading plugin {group}:{entry_point.name}: {err}"
-                    )
+                    logger.error(f"Error loading plugin {group}:{entry_point.name}: {err}")
 
     def list_plugins(self) -> Generator[PluginInfo]:
         """
@@ -135,9 +133,7 @@ class PluginManager:
             raise DspamPluginNotFound(f"Plugin {group_name}.{plugin_name} not found")
         return plugin
 
-    def get_plugin_settings(
-        self, group_name: str, plugin_name: str
-    ) -> type[BaseSettings] | None:
+    def get_plugin_settings(self, group_name: str, plugin_name: str) -> type[BaseSettings] | None:
         """
         Get the settings class from the plugin module, if available, and return it.
 
@@ -154,8 +150,7 @@ class PluginManager:
         settings_classes = [
             member
             for _, member in inspect.getmembers(module, inspect.isclass)
-            if issubclass(member, BaseSettings)
-            and member.__module__ == plugin.__module__
+            if issubclass(member, BaseSettings) and member.__module__ == plugin.__module__
         ]
         if settings_classes:
             return settings_classes[0]

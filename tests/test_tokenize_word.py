@@ -111,9 +111,7 @@ async def test_tokenize_email_received_header():
     tokens = await tokenizer(content="", metadata=metadata)
 
     assert "Received*from" in tokens
-    assert "Received*bigdog.frenkelfirm.com" in tokens, (
-        "Domain name should not be split"
-    )
+    assert "Received*bigdog.frenkelfirm.com" in tokens, "Domain name should not be split"
     assert "Received*74.113.59.146" in tokens, "IP address should not be split"
 
     metadata = {"Received": IPV6_RECEIVED_HEADER}

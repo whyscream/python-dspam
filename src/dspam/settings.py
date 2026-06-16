@@ -2,7 +2,6 @@
 
 import os
 import pathlib
-from abc import ABC
 from functools import cached_property
 
 from pydantic import BaseModel, computed_field
@@ -39,7 +38,7 @@ def get_plugin_settings(group_name: str, plugin_name: str) -> type[BaseSettings]
     return settings_class
 
 
-class BaseParserSettings(ABC):
+class BaseParserSettings:
     @classmethod
     def settings_customise_sources(
         cls,

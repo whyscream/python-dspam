@@ -15,11 +15,11 @@ from cyclopts import App, Parameter, validators
 from rich.console import Console
 from rich.table import Table
 
-from dspam.types import Verdict
 from dspam.di import provider
 from dspam.main import classify, train
 from dspam.plugins import PluginManager
 from dspam.settings import Settings
+from dspam.types import Verdict
 
 cli = App(help=__doc__, version=version("python-dspam"))
 

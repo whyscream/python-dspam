@@ -5,15 +5,13 @@ import pathlib
 
 import pytest
 from anyio import wrap_file
-
-
 from dspam_plugin_email.parse import EmailParser, EmailParserSettings
 
 
 @pytest.fixture(autouse=True)
 def empty_config(tmp_path, monkeypatch):
     """Set the default config root to an empty directory."""
-    for env_var in os.environ.keys():
+    for env_var in os.environ:
         if env_var.startswith("DSPAM_"):
             monkeypatch.delenv(env_var, raising=False)
 

@@ -15,11 +15,11 @@ Additional metadata can be added:
 import os
 import pathlib
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 
 import anyio
 import orjson
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 
 from dspam.settings import StorageSettings
 
@@ -65,7 +65,7 @@ class Storage(ABC):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
     def __init__(self, settings: StorageSettings, storage_root: pathlib.Path) -> None:
-        """Initialize the storage with the given root directory. The storage may create files or directories under this root as needed."""
+        """Initialize the storage backend. The storage backend may create files under the storage root as needed."""
         self.settings = settings
         self.storage_root = storage_root
 
@@ -90,7 +90,8 @@ class Storage(ABC):
     @abstractmethod
     async def store_token_seen(self, token: str) -> None:
         """
-        Update the last seen timestamp for the token. This only updates the last seen timestamp for existing tokens, and does not add new tokens.
+        Update the last seen timestamp for the token. This only updates the last seen timestamp for existing tokens,
+        and does not add new tokens.
 
         This method may keep the data in memory, use persist() to save.
         """

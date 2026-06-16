@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 from rodi import Container
 
-from dspam.settings import Settings, ParserSettings
+from dspam.settings import ParserSettings, Settings
 
 
 class CustomParserSettings(ParserSettings):

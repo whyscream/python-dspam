@@ -5,8 +5,8 @@ import email.policy
 import html
 import logging
 import re
-from email.parser import Parser as PyEmailParser
 from email.message import EmailMessage, MIMEPart
+from email.parser import Parser as PyEmailParser
 from typing import cast
 
 from anyio import AsyncFile
@@ -48,8 +48,8 @@ class EmailParser(Parser):
         message_parser = PyEmailParser(policy=email.policy.default, _class=EmailMessage)
         try:
             message = cast(EmailMessage, message_parser.parsestr(file_content))  # type: ignore[redundant-cast]
-        except TypeError:
-            raise DspamParseError("Failed to parse email")
+        except TypeError as err:
+            raise DspamParseError("Failed to parse email") from err
 
         content = self.parse_body(message)
         metadata = self.parse_headers(message)
@@ -68,22 +68,14 @@ class EmailParser(Parser):
             elif body_part.get_content_type() == "text/plain":
                 content = body_part.get_content()
             else:
-                raise DspamParseError(
-                    "Unsupported email body content type: {}".format(
-                        body_part.get_content_type()
-                    )
-                )
+                raise DspamParseError(f"Unsupported email body content type: {body_part.get_content_type()}")
         else:
             if message.get_content_type() == "text/html":
                 content = self.parse_html_body(message)
             elif message.get_content_type() == "text/plain":
                 content = message.get_content()
             else:
-                raise DspamParseError(
-                    "Unsupported email body content type: {}".format(
-                        message.get_content_type()
-                    )
-                )
+                raise DspamParseError(f"Unsupported email body content type: {message.get_content_type()}")
 
         if not isinstance(content, str):
             raise DspamParseError("Failed to decode email body as text")
@@ -95,7 +87,7 @@ class EmailParser(Parser):
         ignore_headers = [h.lower() for h in self.settings.ignore_headers]
 
         headers = {}
-        for header_name in message.keys():
+        for header_name in message:
             if header_name.lower() in ignore_headers:
                 logger.debug(f"Ignoring header: {header_name}")
                 continue

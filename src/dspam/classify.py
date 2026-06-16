@@ -4,7 +4,6 @@ import logging
 import random
 from abc import ABC, abstractmethod
 
-
 from dspam import IS_INNOCENT, IS_SPAM, IS_UNKNOWN
 from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
@@ -29,7 +28,8 @@ class Classifier(ABC):
 
 class DummyClassifier(Classifier):
     """
-    A dummy classifier that classifies a message as spam if it finds the word "spam" in any of its tokens, and as innocent otherwise.
+    A dummy classifier that classifies a message as spam if it finds the word "spam" in any of its tokens,
+    and as innocent otherwise.
     """
 
     API_VERSION: str = "1.0"
@@ -82,9 +82,7 @@ class SimpleClassifier(Classifier):
         await self.log_debug_tokens(innocent_tokens, IS_INNOCENT)
         await self.log_debug_tokens(unknown_tokens, IS_UNKNOWN)
 
-        logger.info(
-            f"Classifier token results: spam={spam_count}, innocent={innocent_count}, unknown={unknown_count}"
-        )
+        logger.info(f"Classifier token results: spam={spam_count}, innocent={innocent_count}, unknown={unknown_count}")
         if spam_count > innocent_count:
             return IS_SPAM
         else:
