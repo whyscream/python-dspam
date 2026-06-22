@@ -119,3 +119,21 @@ async def test_tokenize_email_received_header():
     tokens = await tokenizer(content="", metadata=metadata)
 
     assert "Received*IPv6:2a01:518:1:42:8::133" in tokens
+
+
+async def test_tokenize_unicode_metadata():
+    metadata = {"Subject": "Hello, 世界"}
+
+    tokenizer = WordTokenizer(TokenizerSettings())
+    tokens = await tokenizer(content="", metadata=metadata)
+
+    assert "Subject*世界" in tokens
+
+
+async def test_tokenize_unicode_content():
+    content = "Hello, 世界"
+
+    tokenizer = WordTokenizer(TokenizerSettings())
+    tokens = await tokenizer(content=content, metadata={})
+
+    assert "世界" in tokens

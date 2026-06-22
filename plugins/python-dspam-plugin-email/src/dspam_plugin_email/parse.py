@@ -40,6 +40,7 @@ class EmailParser(Parser):
     API_VERSION: str = "1.0"
 
     STRIP_HTML_REGEX = re.compile(r"<[^>]+>")
+    UNICODE_ESCAPE_REGEX = re.compile(r"\\u([0-9a-fA-F]{4})")
 
     settings: EmailParserSettings
 
@@ -103,8 +104,22 @@ class EmailParser(Parser):
     def parse_html_body(self, message_part: MIMEPart) -> str:
         """Extract text content from an HTML email body."""
         html_content = message_part.get_content()
-        # Simple way to extract text from HTML: remove tags for decode entities.
+        # Simple way to extract text from HTML: remove tags and decode entities.
         # For a more robust solution, consider using an HTML parser like BeautifulSoup.
         text_content = re.sub(self.STRIP_HTML_REGEX, "", html_content)
         text_content = html.unescape(text_content)
+        # Some template engines ship escaped Unicode literals in HTML text.
+        text_content = self.decode_unicode_escapes(text_content)
         return text_content.strip()
+
+    def decode_unicode_escapes(self, text: str) -> str:
+        """Decode JavaScript-style Unicode escapes like \u901a into Unicode text."""
+
+        if "\\u" not in text:
+            return text
+
+        return re.sub(
+            self.UNICODE_ESCAPE_REGEX,
+            lambda match: chr(int(match.group(1), 16)),
+            text,
+        )
