@@ -27,7 +27,7 @@ The package can be configured using a simple configuration file (e.g. `config.to
 
 The configuration file is read from `$XDG_CONFIG_HOME/python-dspam/config.toml`, or from `~/.config/python-dspam/config.toml` if `$XDG_CONFIG_HOME` is not set. The configuration options should be available in a future commandline option which will dump the current or default config as toml file to stdout. For now, you'll need to check the source code (`src/dspam/settings.py`) for details.
 
-There is one plugin implemented in the plugins directory, which is a parser for email messages. This plugin can be installed by running `pip install dspam-plugin-email`. To configure the email parser, set in the configuration file:
+There is one plugin implemented in the plugins directory, which is a parser for email messages. This plugin can be installed by running `pip install python-dspam-plugin-email`. To configure the email parser, set in the configuration file:
 
 ```toml
 [dspam.parser]
@@ -80,7 +80,7 @@ The plugin system is designed to be flexible and extensible, allowing for easy a
 
 You can add new plugins by creating a new Python package that defines the plugin and its entry point in the `pyproject.toml` file. The plugin should implement the required interface for the specified plugin type.
 
-The email parser plugin in the `plugins/dspam-plugin-email` directory is an example of how to implement a plugin.
+The email parser plugin in the `plugins/python-dspam-plugin-email` directory is an example of how to implement a plugin.
 
 ### Plugin implementation requirements:
 

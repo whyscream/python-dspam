@@ -8,8 +8,8 @@ build-backend = "setuptools.build_meta"
 enabled = true
 
 [project]
-name = "dspam-plugin-email"
-description = "Add your description here"
+name = "python-dspam-plugin-email"
+description = "A plugin for Python-DSPAM that parses email messages."
 dynamic = ["version"]
 readme = "README.md"
 authors = [

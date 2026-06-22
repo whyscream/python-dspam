@@ -53,7 +53,7 @@ repos:
             (?x)^(
                 .pre-commit-config.yaml|
                 LICENSE|
-                plugins/dspam-plugin-email/README.md|
+                plugins/python-dspam-plugin-email/README.md|
                 README.md|
                 uv.lock
             )$

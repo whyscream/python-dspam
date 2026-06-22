@@ -8,8 +8,8 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "dspam-plugin-email",
     "python-dspam",
+    "python-dspam-plugin-email",
 ]
 
 [[package]]
@@ -188,20 +188,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e0/4d/f332313098c1de1b2d2ff91cf2674415cc7cddab2ca1b01ae29774bd5fdf/docstring_parser-0.18.0.tar.gz", hash = "sha256:292510982205c12b1248696f44959db3cdd1740237a968ea1e2e7a900eeb2015", size = 29341, upload-time = "2026-04-14T04:09:19.867Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/5f/ed01f9a3cdffbd5a008556fc7b2a08ddb1cc6ace7effa7340604b1d16699/docstring_parser-0.18.0-py3-none-any.whl", hash = "sha256:b3fcbed555c47d8479be0796ef7e19c2670d428d72e96da63f3a40122860374b", size = 22484, upload-time = "2026-04-14T04:09:18.638Z" },
-]
-
-[[package]]
-name = "dspam-plugin-email"
-source = { editable = "plugins/dspam-plugin-email" }
-dependencies = [
-    { name = "anyio" },
-    { name = "pydantic-settings" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "anyio", specifier = ">=4.13.0" },
-    { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c" },
 ]
 
 [[package]]
@@ -748,6 +734,20 @@ test = [
     { name = "mypy", specifier = ">=2.1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
+]
+
+[[package]]
+name = "python-dspam-plugin-email"
+source = { editable = "plugins/python-dspam-plugin-email" }
+dependencies = [
+    { name = "anyio" },
+    { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anyio", specifier = ">=4.13.0" },
+    { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c" },
 ]
 
 [[package]]
