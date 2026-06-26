@@ -77,8 +77,8 @@ class TokenizerSettings(BaseModel):
     plugin: str = "word"
     """The plugin to use for tokenization."""
 
-    delimiters: str = '.,!?;:"@()[]{}<>=*/\\'
-    """The list of delimiters that a tokenizer uses to separate content into basic word-tokens."""
+    delimiters: str = " .,!?;:\"''@()[]{}<>=*/\\"
+    """The list of delimiters that a tokenizer uses to separate content into tokens."""
 
     @computed_field(exclude_if=lambda x: x is None)  # type: ignore[prop-decorator]
     @cached_property

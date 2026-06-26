@@ -35,8 +35,9 @@ repos:
         args: [ "--config-file=pyproject.toml" ]
         additional_dependencies:
           - anyio
-          - orjson
           - cyclopts
+          - homoglyphs_fork
+          - orjson
           - pydantic-settings
           - rich
           - rodi

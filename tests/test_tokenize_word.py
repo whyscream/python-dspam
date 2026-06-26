@@ -137,3 +137,13 @@ async def test_tokenize_unicode_content():
     tokens = await tokenizer(content=content, metadata={})
 
     assert "世界" in tokens
+
+
+async def test_unicode_delimiters_default():
+    settings = TokenizerSettings()
+    homoglyph_delimiters = WordTokenizer(settings).get_homoglyph_delimiters(settings.delimiters)
+
+    for char in settings.delimiters:
+        if char in WordTokenizer.HOMOGLYPH_IGNORE_DELIMITERS:
+            continue
+        assert char in homoglyph_delimiters

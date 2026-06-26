@@ -21,6 +21,7 @@ license-files = ["LICENSE"]
 dependencies = [
     "anyio>=4.13.0",
     "cyclopts>=4.11.0",
+    "homoglyphs-fork>=2.1.2",
     "orjson>=3.11.9",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",

@@ -209,6 +209,15 @@ wheels = [
 ]
 
 [[package]]
+name = "homoglyphs-fork"
+version = "2.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/a8/9b960f7347f718a45defdecb33f8d308dc23c259754fe3986b64926de71c/homoglyphs_fork-2.1.2.tar.gz", hash = "sha256:9d09efafd93cff21c4c957ce79ac2cff97debd2978596b74ddf1da5ef5ffb093", size = 151219, upload-time = "2026-02-17T08:05:29.569Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/52/f7/f96cbbd19497aead4c899bacfbbfeb8cc58bdcdf7a0e09efe09811ede2b3/homoglyphs_fork-2.1.2-py3-none-any.whl", hash = "sha256:9d690fba4283b90c602f37ebae6d9639303edfcecd7f7cb77b67e7def683e3bc", size = 91671, upload-time = "2026-02-17T08:05:28.046Z" },
+]
+
+[[package]]
 name = "identify"
 version = "2.6.19"
 source = { registry = "https://pypi.org/simple" }
@@ -690,6 +699,7 @@ source = { editable = "." }
 dependencies = [
     { name = "anyio" },
     { name = "cyclopts" },
+    { name = "homoglyphs-fork" },
     { name = "orjson" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -715,6 +725,7 @@ test = [
 requires-dist = [
     { name = "anyio", specifier = ">=4.13.0" },
     { name = "cyclopts", specifier = ">=4.11.0" },
+    { name = "homoglyphs-fork", specifier = ">=2.1.2" },
     { name = "orjson", specifier = ">=3.11.9" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pydantic-settings", git = "https://github.com/pydantic/pydantic-settings.git?rev=9941cae4c633089b7bdb682515c423d0aa80b46c" },
