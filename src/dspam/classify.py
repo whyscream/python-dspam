@@ -48,14 +48,11 @@ class SimpleClassifier(Classifier):
 
     API_VERSION: str = "1.0"
 
-    LOG_DEBUG_TOKENS = 10
-    # TODO: how to make this flexible
+    DEBUG_TOKENS_COUNT: int = 10
     """
     The number of tokens to log for debugging purposes.
 
-    The tokens are logged at level DEBUG. For each verdict (innocent, ham), this amount of tokens will be logged.
-    With value 0, no tokens are logged.
-    With value -1, all tokens are logged.
+    The tokens are logged at level DEBUG. For each verdict (innocent, ham), this number of tokens will be logged.
     """
 
     async def __call__(self, tokens: list[str]) -> str:
@@ -89,9 +86,9 @@ class SimpleClassifier(Classifier):
             return IS_INNOCENT
 
     async def log_debug_tokens(self, tokens: list[str], verdict: str) -> None:
-        log_debug_tokens = self.LOG_DEBUG_TOKENS if self.LOG_DEBUG_TOKENS >= 0 else 1_000_000
+        debug_tokens_count = max(self.DEBUG_TOKENS_COUNT, 0)
         token_count = len(tokens)
-        for token in random.sample(tokens, min(log_debug_tokens, token_count)):
+        for token in random.sample(tokens, min(debug_tokens_count, token_count)):
             token_data = await self.storage.get_token(token)
             if token_data:
                 logger.debug(f"Token: {verdict=} {token_data}")
