@@ -39,11 +39,11 @@ def empty_storage(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def storage(tmp_path):
+def storage(empty_storage):
     from dspam.settings import StorageSettings
     from dspam.storage import JSONStorage
 
-    json_storage = JSONStorage(StorageSettings(), tmp_path)
+    json_storage = JSONStorage(StorageSettings(), empty_storage)
     yield json_storage
     json_storage_path = pathlib.Path(json_storage.path)
     if json_storage_path.exists():
