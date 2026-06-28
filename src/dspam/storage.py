@@ -15,6 +15,7 @@ Additional metadata can be added:
 import os
 import pathlib
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 
@@ -103,8 +104,18 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def get_token(self, token: str) -> TokenData | None:
-        """Find a token from the storage."""
+    async def get_tokens(self, tokens: list[str]) -> Mapping[str, TokenData]:
+        """
+        Find and retrieve tokens from the storage.
+
+        All matching tokens are returned from the storage. Tokens that could not be retrieved are omitted.
+
+        Args:
+            tokens: List of tokens to retrieve.
+
+        Returns:
+            A mapping of tokens to their corresponding TokenData. Tokens that could not be retrieved are omitted.
+        """
         pass
 
 
@@ -173,6 +184,11 @@ class JSONStorage(Storage):
             token_data.seen()
             self.data[token] = token_data
 
-    async def get_token(self, token: str) -> TokenData | None:
+    async def get_tokens(self, tokens: list[str]) -> Mapping[str, TokenData]:
         await self.open()
-        return self.data.get(token)
+        result = {}
+        for token in tokens:
+            token_data = self.data.get(token)
+            if token_data:
+                result.update({token: token_data})
+        return result

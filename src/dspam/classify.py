@@ -25,6 +25,24 @@ class Classifier(ABC):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
 
+    async def log_debug_tokens(self, tokens: list[str], verdict: str, debug_token_count: int = 0) -> None:
+        """
+        Utility method to log some tokens for debugging purposes.
+
+        From the list of passed tokens, it will log up to `debug_token_count` tokens at level DEBUG,
+        along with their verdict and token data. The token data is retrieved from the storage.
+        """
+        debug_token_count = max(debug_token_count, 0)
+        token_count = len(tokens)
+        tokens = random.sample(tokens, min(debug_token_count, token_count))  # noqa: S2245 non-cryptographic random sampling is fine for logging
+        tokens_data = await self.storage.get_tokens(tokens)
+        for token in tokens:
+            token_data = tokens_data.get(token)
+            if token_data:
+                logger.debug(f"Token: {verdict=} {token_data}")
+            else:
+                logger.debug(f"Token: {verdict=} '{token}'")
+
 
 class DummyClassifier(Classifier):
     """
@@ -48,7 +66,7 @@ class SimpleClassifier(Classifier):
 
     API_VERSION: str = "1.0"
 
-    DEBUG_TOKENS_COUNT: int = 10
+    DEBUG_TOKEN_COUNT: int = 10
     """
     The number of tokens to log for debugging purposes.
 
@@ -60,8 +78,9 @@ class SimpleClassifier(Classifier):
         innocent_tokens = []
         unknown_tokens = []
 
+        tokens_data = await self.storage.get_tokens(tokens)
         for token in tokens:
-            token_data = await self.storage.get_token(token)
+            token_data = tokens_data.get(token)
             await self.storage.store_token_seen(token)
             if token_data is None:
                 unknown_tokens.append(token)
@@ -70,27 +89,17 @@ class SimpleClassifier(Classifier):
             else:
                 innocent_tokens.append(token)
 
+        # Log some tokens for debugging purposes
+        await self.log_debug_tokens(spam_tokens, IS_SPAM, self.DEBUG_TOKEN_COUNT)
+        await self.log_debug_tokens(innocent_tokens, IS_INNOCENT, self.DEBUG_TOKEN_COUNT)
+        await self.log_debug_tokens(unknown_tokens, IS_UNKNOWN, self.DEBUG_TOKEN_COUNT)
+
         spam_count = len(spam_tokens)
         innocent_count = len(innocent_tokens)
         unknown_count = len(unknown_tokens)
-
-        # Log some tokens for debugging purposes
-        await self.log_debug_tokens(spam_tokens, IS_SPAM)
-        await self.log_debug_tokens(innocent_tokens, IS_INNOCENT)
-        await self.log_debug_tokens(unknown_tokens, IS_UNKNOWN)
 
         logger.info(f"Classifier token results: spam={spam_count}, innocent={innocent_count}, unknown={unknown_count}")
         if spam_count > innocent_count:
             return IS_SPAM
         else:
             return IS_INNOCENT
-
-    async def log_debug_tokens(self, tokens: list[str], verdict: str) -> None:
-        debug_tokens_count = max(self.DEBUG_TOKENS_COUNT, 0)
-        token_count = len(tokens)
-        for token in random.sample(tokens, min(debug_tokens_count, token_count)):  # noqa: S2245 non-cryptographic random sampling is fine for logging
-            token_data = await self.storage.get_token(token)
-            if token_data:
-                logger.debug(f"Token: {verdict=} {token_data}")
-            else:
-                logger.debug(f"Token: {verdict=} '{token}'")
