@@ -88,7 +88,7 @@ class SimpleClassifier(Classifier):
     async def log_debug_tokens(self, tokens: list[str], verdict: str) -> None:
         debug_tokens_count = max(self.DEBUG_TOKENS_COUNT, 0)
         token_count = len(tokens)
-        for token in random.sample(tokens, min(debug_tokens_count, token_count)):
+        for token in random.sample(tokens, min(debug_tokens_count, token_count)):  # noqa: S2245 non-cryptographic random sampling is fine for logging
             token_data = await self.storage.get_token(token)
             if token_data:
                 logger.debug(f"Token: {verdict=} {token_data}")
