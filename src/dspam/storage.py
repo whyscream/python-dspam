@@ -44,7 +44,7 @@ class TokenData:
     last_updated: datetime | None = None
 
     def __str__(self) -> str:
-        return f"'{self.token}' spam_hits={self.spam_hits} innocent_hits={self.innocent_hits}"
+        return f"token='{self.token}' spam_hits={self.spam_hits} innocent_hits={self.innocent_hits}"
 
     def add_spam_hit(self) -> None:
         self.spam_hits += 1

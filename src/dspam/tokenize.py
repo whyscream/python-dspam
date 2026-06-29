@@ -18,10 +18,10 @@ class Tokenizer(ABC):
 
     @abstractmethod
     async def __call__(self, content: str, metadata: Metadata) -> list[str]:
-        pass
+        pass  # pragma: no cover
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
 
 class WordTokenizer(Tokenizer):

@@ -17,10 +17,10 @@ class Trainer(ABC):
 
     @abstractmethod
     async def __call__(self, tokens: list[str], classification: Verdict) -> None:
-        pass
+        pass  # pragma: no cover
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
 
 class SimpleTrainer(Trainer):

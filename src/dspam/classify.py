@@ -20,10 +20,10 @@ class Classifier(ABC):
 
     @abstractmethod
     async def __call__(self, tokens: list[str]) -> str:
-        pass
+        pass  # pragma: no cover
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
     async def log_debug_tokens(self, tokens: list[str], verdict: str, debug_token_count: int = 0) -> None:
         """
@@ -41,7 +41,7 @@ class Classifier(ABC):
             if token_data:
                 logger.debug(f"Token: {verdict=} {token_data}")
             else:
-                logger.debug(f"Token: {verdict=} '{token}'")
+                logger.debug(f"Token: {verdict=} {token=}")
 
 
 class DummyClassifier(Classifier):

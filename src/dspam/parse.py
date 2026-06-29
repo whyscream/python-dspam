@@ -29,10 +29,10 @@ class Parser(ABC):
 
     @abstractmethod
     async def __call__(self, fp: AsyncFile[str]) -> ParseResult:
-        pass
+        pass  # pragma: no cover
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"
+        return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
 
 class PlainTextParser(Parser):
