@@ -30,6 +30,24 @@ from dspam.exceptions import DspamPluginNotFound
 logger = logging.getLogger(__name__)
 
 
+def get_package_version(package_name: str) -> str:
+    """Find the version for a top-level package name."""
+    version = "???"
+    try:
+        return importlib.metadata.version(package_name)
+    except importlib.metadata.PackageNotFoundError:
+        pass
+
+    dist_names = importlib.metadata.packages_distributions().get(package_name, [])
+    for dist_name in dist_names:
+        try:
+            return importlib.metadata.version(dist_name)
+        except importlib.metadata.PackageNotFoundError:
+            continue
+
+    return version
+
+
 @dataclass
 class PluginInfo:
     name: str
@@ -104,11 +122,7 @@ class PluginManager:
             for plugin, plugin_class in plugins.items():
                 module_name = plugin_class.__module__
                 package_name = module_name.split(".")[0]
-                try:
-                    version = importlib.metadata.version(package_name)
-                except importlib.metadata.PackageNotFoundError:
-                    module = importlib.import_module(package_name)
-                    version = module.__version__
+                version = get_package_version(package_name)
                 api_version = getattr(plugin_class, "API_VERSION", "0.0")
 
                 yield PluginInfo(
