@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
+[build-system]
+requires = [ "setuptools>=41", "wheel", "setuptools-git-versioning>=3.0,<4", ]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
+
+[project]
+name = "python-dspam-plugin-osb"
+description = "A plugin for Python-DSPAM that provides OSB tokenization."
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    { name = "Tom Hendrikx", email = "tom@whyscream.net" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "anyio>=4.13.0",
+]
+
+[project.entry-points."dspam.tokenizer"]
+osb = "dspam_plugin_osb.osb:OsbTokenizer"

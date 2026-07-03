@@ -54,7 +54,7 @@ repos:
             (?x)^(
                 .pre-commit-config.yaml|
                 LICENSE|
-                plugins/python-dspam-plugin-email/README.md|
+                plugins/.*/README.md|
                 README.md|
                 uv.lock
             )$
