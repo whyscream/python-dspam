@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from dspam.settings import TrainerSettings
-from dspam.storage import TokenData
+from dspam.storage import TokenInfo
 from dspam.train import SimpleTrainer
 from dspam.types import Classification
 
@@ -10,8 +10,8 @@ async def test_train_simple_with_classification(storage):
     """Test that the simple trainer can be called and updates the storage correctly using the classification."""
     # Simulate token data in storage
     storage.data = {
-        "token1": TokenData(token="token1", spam_hits=3, innocent_hits=1),
-        "token2": TokenData(token="token2", spam_hits=1, innocent_hits=1),
+        "token1": TokenInfo(token="token1", spam_hits=3, innocent_hits=1),
+        "token2": TokenInfo(token="token2", spam_hits=1, innocent_hits=1),
     }
 
     trainer = SimpleTrainer(TrainerSettings(), storage=storage)

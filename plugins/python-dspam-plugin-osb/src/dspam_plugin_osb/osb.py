@@ -23,10 +23,10 @@ class OsbTokenizer(Tokenizer):
     SPARSE_WINDOW_SIZE = 5
     """The size of the sliding window for generating OSB tokens."""
 
-    BIGRAM_TOKEN_SEPARATOR: str = "+"  # noqa: S105
+    TOKEN_SEPARATOR = "+"  # noqa: S105
     """The separator to use between terms in OSB tokens."""
 
-    BIGRAM_TOKEN_PLACEHOLDER = "#"  # noqa: S105
+    TOKEN_PLACEHOLDER = "#"  # noqa: S105
     """The placeholder for skipped terms in an OSB token"""
 
     def __init__(self, settings: TokenizerSettings) -> None:
@@ -94,9 +94,9 @@ class OsbTokenizer(Tokenizer):
                 elif osb_token_terms:
                     # Append placeholders only when we already have other terms
                     logger.debug(f"Appending placeholder for term {term}")
-                    osb_token_terms.append(self.BIGRAM_TOKEN_PLACEHOLDER)
+                    osb_token_terms.append(self.TOKEN_PLACEHOLDER)
 
-            osb_token = self.BIGRAM_TOKEN_SEPARATOR.join(osb_token_terms)
+            osb_token = self.TOKEN_SEPARATOR.join(osb_token_terms)
             logger.debug(f"Generated OSB token: {osb_token}")
             yield osb_token
 

@@ -6,12 +6,12 @@ from dataclasses import asdict
 import pytest
 
 from dspam.settings import StorageSettings
-from dspam.storage import JSONStorage, TokenData
+from dspam.storage import JSONStorage, TokenInfo
 
 
 @pytest.fixture
 def token():
-    yield TokenData(token="token")
+    yield TokenInfo(token="token")
 
 
 async def test_json_storage_open_empty(storage):
