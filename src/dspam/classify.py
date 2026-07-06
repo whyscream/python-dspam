@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
-from dspam.types import Classification
+from dspam.types import Classification, TokenList
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class Classifier(ABC):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
-    async def log_debug_tokens(self, tokens: list[str], verdict: Classification, debug_token_count: int = 0) -> None:
+    async def log_debug_tokens(self, tokens: TokenList, verdict: Classification, debug_token_count: int = 0) -> None:
         """
         Utility method to log some tokens for debugging purposes.
 
@@ -52,7 +52,7 @@ class DummyClassifier(Classifier):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, tokens: list[str]) -> Classification:
+    async def __call__(self, tokens: TokenList) -> Classification:
         for token in tokens:
             if "spam" in token:
                 return Classification.SPAM
@@ -73,7 +73,7 @@ class SimpleClassifier(Classifier):
     The tokens are logged at level DEBUG. For each verdict (innocent, ham), this number of tokens will be logged.
     """
 
-    async def __call__(self, tokens: list[str]) -> Classification:
+    async def __call__(self, tokens: TokenList) -> Classification:
         spam_tokens = []
         innocent_tokens = []
         unknown_tokens = []

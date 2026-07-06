@@ -23,6 +23,7 @@ import anyio
 import orjson
 
 from dspam.settings import StorageSettings
+from dspam.types import Token, TokenList
 
 
 def get_storage_root() -> pathlib.Path:
@@ -71,7 +72,7 @@ class Storage(ABC):
         self.storage_root = storage_root
 
     @abstractmethod
-    async def store_spam_token(self, token: str) -> None:
+    async def store_spam_token(self, token: Token) -> None:
         """
         Save a spam token to the storage. This adds new tokens or updates spam count for existing tokens.
 
@@ -80,7 +81,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def store_innocent_token(self, token: str) -> None:
+    async def store_innocent_token(self, token: Token) -> None:
         """
         Save an innocent token to the storage. This adds new tokens or updates innocent count for existing tokens.
 
@@ -89,7 +90,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def store_token_seen(self, token: str) -> None:
+    async def store_token_seen(self, token: Token) -> None:
         """
         Update the last seen timestamp for the token. This only updates the last seen timestamp for existing tokens,
         and does not add new tokens.
@@ -104,7 +105,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def get_tokens(self, tokens: list[str]) -> Mapping[str, TokenData]:
+    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenData]:
         """
         Find and retrieve tokens from the storage.
 
@@ -122,7 +123,7 @@ class Storage(ABC):
 class JSONStorage(Storage):
     API_VERSION = "1.0"
 
-    data: dict[str, TokenData]
+    data: dict[Token, TokenData]
     """In-memery version of the stored token data."""
     path: anyio.Path
     """Path to the stored token data."""
@@ -162,21 +163,21 @@ class JSONStorage(Storage):
             dumped = orjson.dumps(data)
             await f.write(dumped)
 
-    async def store_spam_token(self, token: str) -> None:
+    async def store_spam_token(self, token: Token) -> None:
         await self.open()
 
         token_data = self.data.get(token, TokenData(token=token))
         token_data.add_spam_hit()
         self.data[token] = token_data
 
-    async def store_innocent_token(self, token: str) -> None:
+    async def store_innocent_token(self, token: Token) -> None:
         await self.open()
 
         token_data = self.data.get(token, TokenData(token=token))
         token_data.add_innocent_hit()
         self.data[token] = token_data
 
-    async def store_token_seen(self, token: str) -> None:
+    async def store_token_seen(self, token: Token) -> None:
         await self.open()
 
         token_data = self.data.get(token)
@@ -184,7 +185,7 @@ class JSONStorage(Storage):
             token_data.seen()
             self.data[token] = token_data
 
-    async def get_tokens(self, tokens: list[str]) -> Mapping[str, TokenData]:
+    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenData]:
         await self.open()
         result = {}
         for token in tokens:
