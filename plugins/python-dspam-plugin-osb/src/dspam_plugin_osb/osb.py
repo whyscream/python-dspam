@@ -4,7 +4,13 @@ import logging
 from functools import partial
 
 from dspam.settings import TokenizerSettings
-from dspam.tokenize import METADATA_IGNORE_DELIMITERS, Tokenizer, WordTokenizer, tokenize_metadata
+from dspam.tokenize import (
+    METADATA_IGNORE_DELIMITERS,
+    Tokenizer,
+    get_homoglyph_delimiters,
+    tokenize_metadata,
+    word_tokenize_content,
+)
 from dspam.types import Metadata, TokenList
 
 logger = logging.getLogger(__name__)
@@ -22,12 +28,8 @@ class OsbTokenizer(Tokenizer):
     OSB_TOKEN_PLACEHOLDER = "#"  # noqa: S105
     """The placeholder for skipped terms in an OSB token"""
 
-    word_tokenizer: WordTokenizer
-
     def __init__(self, settings: TokenizerSettings) -> None:
         super().__init__(settings)
-
-        self.word_tokenizer = WordTokenizer(self.settings)
 
     async def __call__(self, content: str, metadata: Metadata) -> TokenList:
         """Tokenize content and metadata into OSB tokens."""
@@ -56,11 +58,11 @@ class OsbTokenizer(Tokenizer):
                 logger.debug(f"Dropped window term {removed}")
             # Append window token if available
             if len(window_terms) < self.SPARSE_WINDOW_SIZE:
-                window_token = word_tokens.pop(0) if word_tokens else None
-                if window_token:
+                try:
+                    window_token = word_tokens.pop(0)
                     logger.debug(f"Appended window term {window_token}")
                     window_terms.append(window_token)
-                else:
+                except IndexError:
                     logger.debug("No more terms to append, processing complete")
                     break
 
@@ -94,4 +96,7 @@ class OsbTokenizer(Tokenizer):
 
     def get_word_tokens(self, content: str, ignore_delimiters: str = "") -> list[str]:
         """Tokenize content into word tokens."""
-        return self.word_tokenizer.tokenize_content(content, ignore_delimiters)
+        delimiters = "".join([d for d in self.settings.delimiters if d not in ignore_delimiters])
+        delimiters += get_homoglyph_delimiters(delimiters)
+
+        return word_tokenize_content(content, delimiters)
