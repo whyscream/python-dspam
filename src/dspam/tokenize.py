@@ -64,27 +64,28 @@ class WordTokenizer(Tokenizer):
 
     def tokenize_metadata(self, metadata: Metadata) -> TokenList:
         """
-        Generate a list of word tokens from the metadata dictionary.
+        Generate a list of tokens from the metadata dictionary.
 
         The metadata key is combined with word tokens from the metadata values to add key-value context in the result.
         Word tokenization for metadata ignores a few delimiters to improve handling of email headers, so domain names
         and ip addresses are preserved.
+
+        Args:
+            metadata (Metadata): the metadata to tokenize.
+        Returns:
+            TokenList: a list of tokens generated from the metadata dictionary.
         """
         metadata_tokens = []
         for key, value in metadata.items():
             if isinstance(value, str):
-                value_tokens = self.tokenize_content(value, self.METADATA_IGNORE_DELIMITERS)
-                metadata_tokens.extend(self.make_metadata_token(key, value_tokens))
+                value = [value]
 
-            elif isinstance(value, list):
-                for item in value:
-                    value_tokens = self.tokenize_content(item, self.METADATA_IGNORE_DELIMITERS)
-                    metadata_tokens.extend(self.make_metadata_token(key, value_tokens))
+            for item in value:
+                value_tokens = self.tokenize_content(item, ignore_delimiters=self.METADATA_IGNORE_DELIMITERS)
+                for value_token in value_tokens:
+                    metadata_tokens.append(f"{key}{self.METADATA_TOKEN_SEPARATOR}{value_token}")
 
         return metadata_tokens
-
-    def make_metadata_token(self, key: str, value_tokens: TokenList) -> TokenList:
-        return [f"{key}{self.METADATA_TOKEN_SEPARATOR}{token}" for token in value_tokens]
 
     @lru_cache(maxsize=128)
     def get_homoglyph_delimiters(self, ascii_delimiters: str) -> str:

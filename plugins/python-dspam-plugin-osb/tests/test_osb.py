@@ -39,3 +39,9 @@ def test_osb_tokenize_content_token_count(content, content_length, tokenizer, nu
 
     tokens = tokenizer.osb_tokenize_content(content)
     assert len(tokens) == num_osb_tokens, f"Expected {num_osb_tokens} OSB tokens, result was: {tokens}"
+
+
+def test_osb_tokenize_metadata_success(tokenizer):
+    metadata = {"foo": "bar qux flerp"}
+    tokens = tokenizer.osb_tokenize_metadata(metadata)
+    assert tokens == ["foo*bar+#+flerp", "foo*qux+flerp"]

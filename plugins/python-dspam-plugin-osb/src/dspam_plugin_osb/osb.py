@@ -30,17 +30,18 @@ class OsbTokenizer(Tokenizer):
 
     async def __call__(self, content: str, metadata: Metadata) -> TokenList:
         """Tokenize content and metadata into OSB tokens."""
+        metadata_tokens = self.osb_tokenize_metadata(metadata)
         content_tokens = self.osb_tokenize_content(content)
-        return content_tokens
+        return metadata_tokens + content_tokens
 
-    def osb_tokenize_content(self, content: str) -> TokenList:
+    def osb_tokenize_content(self, content: str, ignore_delimiters: str = "") -> TokenList:
         """
         Tokenize a content string into OSB tokens.
 
         First, use the `WordTokenizer` to extract word tokens from the content.
         Then apply the OSB sliding window algorithm and generate OSB tokens for each window.
         """
-        word_tokens = self.get_word_tokens(content)
+        word_tokens = self.get_word_tokens(content, ignore_delimiters)
         osb_tokens = []
         # Prepopulate the token lists
         window_size = min(len(word_tokens), self.SPARSE_WINDOW_SIZE)
@@ -85,6 +86,22 @@ class OsbTokenizer(Tokenizer):
 
         return osb_tokens
 
-    def get_word_tokens(self, content: str) -> list[str]:
+    def osb_tokenize_metadata(self, metadata: Metadata) -> TokenList:
+        """Tokenize metadata into OSB tokens."""
+        metadata_tokens = []
+        for key, value in metadata.items():
+            if isinstance(value, str):
+                value = [value]
+
+            for item in value:
+                value_tokens = self.osb_tokenize_content(
+                    item, ignore_delimiters=self.word_tokenizer.METADATA_IGNORE_DELIMITERS
+                )
+                for value_token in value_tokens:
+                    metadata_tokens.append(f"{key}{self.word_tokenizer.METADATA_TOKEN_SEPARATOR}{value_token}")
+
+        return metadata_tokens
+
+    def get_word_tokens(self, content: str, ignore_delimiters: str = "") -> list[str]:
         """Tokenize content into word tokens."""
-        return self.word_tokenizer.tokenize_content(content)
+        return self.word_tokenizer.tokenize_content(content, ignore_delimiters)
