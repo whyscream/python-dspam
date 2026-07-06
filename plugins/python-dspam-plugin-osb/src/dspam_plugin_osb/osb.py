@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import logging
+from collections.abc import Iterator
 from functools import partial
 
 from dspam.settings import TokenizerSettings
@@ -11,7 +12,7 @@ from dspam.tokenize import (
     tokenize_metadata,
     word_tokenize_content,
 )
-from dspam.types import Metadata, TokenList
+from dspam.types import Metadata, Token, TokenList
 
 logger = logging.getLogger(__name__)
 
@@ -66,28 +67,38 @@ class OsbTokenizer(Tokenizer):
                     logger.debug("No more terms to append, processing complete")
                     break
 
-            for idx in range(1, window_size, 1):
-                # Generate a single OSB token
-                osb_token_terms = []
-                for term_idx, term in enumerate(window_terms, 1):
-                    if term_idx == idx:
-                        # Append the first term
-                        osb_token_terms.append(term)
-                        logger.debug(f"Appending start term {term}")
-                    elif osb_token_terms and term_idx == window_size:
-                        # Append last term only when we already have other terms
-                        logger.debug(f"Appending end term {term}")
-                        osb_token_terms.append(term)
-                    elif osb_token_terms:
-                        # Append placeholders only when we already have other terms
-                        logger.debug(f"Appending placeholder for term {term}")
-                        osb_token_terms.append(self.OSB_TOKEN_PLACEHOLDER)
-
-                osb_token = self.TOKEN_SEPARATOR.join(osb_token_terms)
-                logger.debug(f"Generated OSB token: {osb_token}")
-                osb_tokens.append(osb_token)
+                for token in self.get_osb_tokens(window_terms):
+                    osb_tokens.append(token)
 
         return osb_tokens
+
+    def get_osb_tokens(self, word_tokens: TokenList) -> Iterator[Token]:
+        """
+        Generate OSB tokens from a list of word tokens.
+
+        The list of word tokens is considered as the non-sliding window.
+        """
+        window_size = len(word_tokens)
+        for idx in range(1, window_size, 1):
+            # Generate a single OSB token
+            osb_token_terms = []
+            for term_idx, term in enumerate(word_tokens, 1):
+                if term_idx == idx:
+                    # Append the first term
+                    osb_token_terms.append(term)
+                    logger.debug(f"Appending start term {term}")
+                elif osb_token_terms and term_idx == window_size:
+                    # Append last term only when we already have other terms
+                    logger.debug(f"Appending end term {term}")
+                    osb_token_terms.append(term)
+                elif osb_token_terms:
+                    # Append placeholders only when we already have other terms
+                    logger.debug(f"Appending placeholder for term {term}")
+                    osb_token_terms.append(self.OSB_TOKEN_PLACEHOLDER)
+
+            osb_token = self.TOKEN_SEPARATOR.join(osb_token_terms)
+            logger.debug(f"Generated OSB token: {osb_token}")
+            yield osb_token
 
     def osb_tokenize_metadata(self, metadata: Metadata) -> TokenList:
         """Tokenize metadata into OSB tokens."""
