@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
-from dspam import IS_INNOCENT
 from dspam.settings import TrainerSettings
 from dspam.storage import TokenData
 from dspam.train import SimpleTrainer
+from dspam.types import Classification
 
 
 async def test_train_simple_with_classification(storage):
@@ -15,7 +15,7 @@ async def test_train_simple_with_classification(storage):
     }
 
     trainer = SimpleTrainer(TrainerSettings(), storage=storage)
-    await trainer(tokens=["token1", "token2"], classification=IS_INNOCENT)
+    await trainer(tokens=["token1", "token2"], classification=Classification.INNOCENT)
 
     tokens_data = await storage.get_tokens(["token1", "token2"])
 

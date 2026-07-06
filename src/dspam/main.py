@@ -9,7 +9,7 @@ from dspam.di import provider
 from dspam.parse import Parser
 from dspam.tokenize import Tokenizer
 from dspam.train import Trainer
-from dspam.types import Verdict
+from dspam.types import Classification
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ async def classify(file_path: Path) -> None:
     print(f"Classification result for {file_path}: {classification}")
 
 
-async def train(file_path: Path, classification: Verdict) -> None:
+async def train(file_path: Path, classification: Classification) -> None:
     """Train the classifier with the given file and classification."""
     tokens = await _parse_and_tokenize(file_path)
 
