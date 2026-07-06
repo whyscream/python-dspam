@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Iterator
 from functools import partial
 from typing import ClassVar
 
@@ -9,7 +9,7 @@ import homoglyphs_fork as hg  # type: ignore[import-untyped]
 from anyio.functools import lru_cache
 
 from dspam.settings import TokenizerSettings
-from dspam.types import Metadata, TokenList
+from dspam.types import Metadata, Token, TokenList
 
 METADATA_TOKEN_SEPARATOR: str = "*"  # noqa: S105
 """The separator that is used between the metadata key and the tokenized values."""
@@ -83,7 +83,7 @@ def get_homoglyph_delimiters(ascii_delimiters: str) -> str:
     return "".join(set(unicode_delimiters))
 
 
-def tokenize_metadata(metadata: Metadata, value_tokenizer: Callable[[str], TokenList]) -> Generator[str]:
+def tokenize_metadata(metadata: Metadata, value_tokenizer: Callable[[str], TokenList]) -> Iterator[Token]:
     """
     Walk a metadata dictionary and tokenize it into a list of tokens.
 
