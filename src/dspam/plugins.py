@@ -20,12 +20,13 @@ plugin API that it implements. This allows for compatibility checks when loading
 import importlib.metadata
 import inspect
 import logging
-from collections.abc import Generator
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 from pydantic_settings import BaseSettings
 
 from dspam.exceptions import DspamPluginNotFound
+from dspam.types import PluginGroup
 
 logger = logging.getLogger(__name__)
 
@@ -58,26 +59,11 @@ class PluginInfo:
 
 
 class PluginManager:
-    # Plugin groups
-    PARSER: str = "parser"
-    TOKENIZER: str = "tokenizer"
-    CLASSIFIER: str = "classifier"
-    TRAINER: str = "trainer"
-    STORAGE: str = "storage"
-
-    GROUPS: list[str] = [
-        PARSER,
-        TOKENIZER,
-        CLASSIFIER,
-        TRAINER,
-        STORAGE,
-    ]
-
-    PLUGIN_ENTRY_POINTS = {f"dspam.{group}": group for group in GROUPS}
+    PLUGIN_ENTRY_POINTS = {f"dspam.{group}": group for group in PluginGroup}
     """Supported entry point groups for registering plugins: dspam:<group name>."""
 
     def __init__(self) -> None:
-        self.plugins: dict[str, dict[str, type]] = {group: {} for group in self.GROUPS}
+        self.plugins: dict[str, dict[str, type]] = {group: {} for group in PluginGroup}
 
     def load_all_plugins(self) -> None:
         """
@@ -92,12 +78,12 @@ class PluginManager:
         classify_module = importlib.import_module("dspam.classify")
         training_module = importlib.import_module("dspam.train")
         storage_module = importlib.import_module("dspam.storage")
-        self.plugins[self.PARSER]["plaintext"] = parse_module.PlainTextParser
-        self.plugins[self.TOKENIZER]["word"] = tokenize_module.WordTokenizer
-        self.plugins[self.CLASSIFIER]["simple"] = classify_module.SimpleClassifier
-        self.plugins[self.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
-        self.plugins[self.TRAINER]["simple"] = training_module.SimpleTrainer
-        self.plugins[self.STORAGE]["json"] = storage_module.JSONStorage
+        self.plugins[PluginGroup.PARSER]["plaintext"] = parse_module.PlainTextParser
+        self.plugins[PluginGroup.TOKENIZER]["word"] = tokenize_module.WordTokenizer
+        self.plugins[PluginGroup.CLASSIFIER]["simple"] = classify_module.SimpleClassifier
+        self.plugins[PluginGroup.CLASSIFIER]["dummy"] = classify_module.DummyClassifier
+        self.plugins[PluginGroup.TRAINER]["simple"] = training_module.SimpleTrainer
+        self.plugins[PluginGroup.STORAGE]["json"] = storage_module.JSONStorage
 
         plugin_names = [f"{p.group}:{p.name}" for p in self.list_plugins()]
         logger.debug(f"Loaded built-in plugins: {', '.join(plugin_names)}")
@@ -112,7 +98,7 @@ class PluginManager:
                 except Exception as err:
                     logger.exception(f"Error loading plugin {group}:{entry_point.name}", exc_info=err)
 
-    def list_plugins(self) -> Generator[PluginInfo]:
+    def list_plugins(self) -> Iterator[PluginInfo]:
         """
         List all loaded plugins.
 
@@ -133,7 +119,7 @@ class PluginManager:
                     api_version=api_version,
                 )
 
-    def get_plugin(self, group_name: str, plugin_name: str) -> type:
+    def get_plugin(self, group_name: PluginGroup, plugin_name: str) -> type:
         """
         Get the plugin class for the specified group and plugin name.
 
@@ -147,7 +133,7 @@ class PluginManager:
             raise DspamPluginNotFound(f"Plugin {group_name}.{plugin_name} not found")
         return plugin
 
-    def get_plugin_settings(self, group_name: str, plugin_name: str) -> type[BaseSettings] | None:
+    def get_plugin_settings(self, group_name: PluginGroup, plugin_name: str) -> type[BaseSettings] | None:
         """
         Get the settings class from the plugin module, if available, and return it.
 
