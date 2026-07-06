@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from dspam.settings import TrainerSettings
 from dspam.storage import Storage
-from dspam.types import Classification
+from dspam.types import Classification, TokenList
 
 
 class Trainer(ABC):
@@ -15,7 +15,7 @@ class Trainer(ABC):
         self.storage = storage
 
     @abstractmethod
-    async def __call__(self, tokens: list[str], classification: Classification) -> None:
+    async def __call__(self, tokens: TokenList, classification: Classification) -> None:
         pass  # pragma: no cover
 
     def __str__(self) -> str:
@@ -29,12 +29,12 @@ class SimpleTrainer(Trainer):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, tokens: list[str], classification: Classification) -> None:
+    async def __call__(self, tokens: TokenList, classification: Classification) -> None:
         # Update the storage with the new hits
         for token in tokens:
             if classification == Classification.SPAM:
                 await self.storage.store_spam_token(token)
-            else:
+            elif classification == Classification.INNOCENT:
                 await self.storage.store_innocent_token(token)
 
         await self.storage.persist()
