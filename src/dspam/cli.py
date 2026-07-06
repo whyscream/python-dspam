@@ -19,7 +19,7 @@ from dspam.di import provider
 from dspam.main import classify, train
 from dspam.plugins import PluginManager
 from dspam.settings import Settings
-from dspam.types import Verdict
+from dspam.types import Classification
 
 cli = App(help=__doc__, version=version("python-dspam"))
 
@@ -49,7 +49,7 @@ async def train_from_file(
         ),
     ],
     classification: Annotated[
-        Verdict,
+        Classification,
         Parameter(alias="-c", help="Classification of the file (innocent or spam)"),
     ],
 ) -> None:

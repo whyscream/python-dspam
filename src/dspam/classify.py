@@ -4,9 +4,9 @@ import logging
 import random
 from abc import ABC, abstractmethod
 
-from dspam import IS_INNOCENT, IS_SPAM, IS_UNKNOWN
 from dspam.settings import ClassifierSettings
 from dspam.storage import Storage
+from dspam.types import Classification
 
 logger = logging.getLogger(__name__)
 
@@ -19,13 +19,13 @@ class Classifier(ABC):
         self.storage = storage
 
     @abstractmethod
-    async def __call__(self, tokens: list[str]) -> str:
+    async def __call__(self, tokens: list[str]) -> Classification:
         pass  # pragma: no cover
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
-    async def log_debug_tokens(self, tokens: list[str], verdict: str, debug_token_count: int = 0) -> None:
+    async def log_debug_tokens(self, tokens: list[str], verdict: Classification, debug_token_count: int = 0) -> None:
         """
         Utility method to log some tokens for debugging purposes.
 
@@ -52,11 +52,11 @@ class DummyClassifier(Classifier):
 
     API_VERSION: str = "1.0"
 
-    async def __call__(self, tokens: list[str]) -> str:
+    async def __call__(self, tokens: list[str]) -> Classification:
         for token in tokens:
             if "spam" in token:
-                return IS_SPAM
-        return IS_INNOCENT
+                return Classification.SPAM
+        return Classification.INNOCENT
 
 
 class SimpleClassifier(Classifier):
@@ -73,7 +73,7 @@ class SimpleClassifier(Classifier):
     The tokens are logged at level DEBUG. For each verdict (innocent, ham), this number of tokens will be logged.
     """
 
-    async def __call__(self, tokens: list[str]) -> str:
+    async def __call__(self, tokens: list[str]) -> Classification:
         spam_tokens = []
         innocent_tokens = []
         unknown_tokens = []
@@ -90,9 +90,9 @@ class SimpleClassifier(Classifier):
                 innocent_tokens.append(token)
 
         # Log some tokens for debugging purposes
-        await self.log_debug_tokens(spam_tokens, IS_SPAM, self.DEBUG_TOKEN_COUNT)
-        await self.log_debug_tokens(innocent_tokens, IS_INNOCENT, self.DEBUG_TOKEN_COUNT)
-        await self.log_debug_tokens(unknown_tokens, IS_UNKNOWN, self.DEBUG_TOKEN_COUNT)
+        await self.log_debug_tokens(spam_tokens, Classification.SPAM, self.DEBUG_TOKEN_COUNT)
+        await self.log_debug_tokens(innocent_tokens, Classification.INNOCENT, self.DEBUG_TOKEN_COUNT)
+        await self.log_debug_tokens(unknown_tokens, Classification.UNKNOWN, self.DEBUG_TOKEN_COUNT)
 
         spam_count = len(spam_tokens)
         innocent_count = len(innocent_tokens)
@@ -100,6 +100,6 @@ class SimpleClassifier(Classifier):
 
         logger.info(f"Classifier token results: spam={spam_count}, innocent={innocent_count}, unknown={unknown_count}")
         if spam_count > innocent_count:
-            return IS_SPAM
+            return Classification.SPAM
         else:
-            return IS_INNOCENT
+            return Classification.INNOCENT

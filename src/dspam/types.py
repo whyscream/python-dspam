@@ -5,6 +5,7 @@ Custom type annotations for dspam.
 """
 
 from collections.abc import Mapping, Sequence
+from enum import StrEnum
 from typing import Literal
 
 type LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -18,5 +19,10 @@ type Token = str
 type TokenList = list[Token]
 """A list of Tokens as produced by a tokenizer."""
 
-Verdict = Literal["innocent", "spam"]
-"""Outcome of a classification."""
+
+class Classification(StrEnum):
+    """Outcome of a classification or token categorization."""
+
+    INNOCENT = "innocent"
+    SPAM = "spam"
+    UNKNOWN = "unknown"
