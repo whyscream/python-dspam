@@ -33,8 +33,8 @@ def get_storage_root() -> pathlib.Path:
 
 
 @dataclass
-class TokenData:
-    """Internal token data format."""
+class TokenInfo:
+    """Internal rich data format for tokens."""
 
     token: str
     token_hash: str = ""
@@ -105,7 +105,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenData]:
+    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenInfo]:
         """
         Find and retrieve tokens from the storage.
 
@@ -115,7 +115,7 @@ class Storage(ABC):
             tokens: List of tokens to retrieve.
 
         Returns:
-            A mapping of tokens to their corresponding TokenData. Tokens that could not be retrieved are omitted.
+            A mapping of tokens to their corresponding TokenInfo. Tokens that could not be retrieved are omitted.
         """
         pass
 
@@ -123,7 +123,7 @@ class Storage(ABC):
 class JSONStorage(Storage):
     API_VERSION = "1.0"
 
-    data: dict[Token, TokenData]
+    data: dict[Token, TokenInfo]
     """In-memery version of the stored token data."""
     path: anyio.Path
     """Path to the stored token data."""
@@ -148,15 +148,13 @@ class JSONStorage(Storage):
 
         self.data = {}
         for token, token_data in data.items():
-            self.data[token] = TokenData(**token_data)
+            self.data[token] = TokenInfo(**token_data)
 
     async def persist(self) -> None:
         if not hasattr(self, "data"):
             return
 
-        data = {}
-        for token, token_data in self.data.items():
-            data[token] = asdict(token_data)
+        data = {token: asdict(data) for token, data in self.data.items()}
 
         await self.path.parent.mkdir(parents=True, exist_ok=True)
         async with await self.path.open("wb") as f:
@@ -166,14 +164,14 @@ class JSONStorage(Storage):
     async def store_spam_token(self, token: Token) -> None:
         await self.open()
 
-        token_data = self.data.get(token, TokenData(token=token))
+        token_data = self.data.get(token, TokenInfo(token=token))
         token_data.add_spam_hit()
         self.data[token] = token_data
 
     async def store_innocent_token(self, token: Token) -> None:
         await self.open()
 
-        token_data = self.data.get(token, TokenData(token=token))
+        token_data = self.data.get(token, TokenInfo(token=token))
         token_data.add_innocent_hit()
         self.data[token] = token_data
 
@@ -185,11 +183,6 @@ class JSONStorage(Storage):
             token_data.seen()
             self.data[token] = token_data
 
-    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenData]:
+    async def get_tokens(self, tokens: TokenList) -> Mapping[Token, TokenInfo]:
         await self.open()
-        result = {}
-        for token in tokens:
-            token_data = self.data.get(token)
-            if token_data:
-                result.update({token: token_data})
-        return result
+        return {token: data for token, data in self.data.items() if token in tokens}
