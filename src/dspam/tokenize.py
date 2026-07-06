@@ -17,6 +17,14 @@ METADATA_TOKEN_SEPARATOR: str = "*"  # noqa: S105
 METADATA_IGNORE_DELIMITERS: str = ".:"
 """The delimiters to filter from the default set when tokenizing metadata values."""
 
+HOMOGLYPH_IGNORE_DELIMITERS: str = "@"
+"""
+The ascii delimiters to filter from the configured delimiters when generating homoglyphs.
+
+Some delimiters generate homoglyphs that are unwanted because they're too common.
+E.g. the delimiter '@' triggers the regular 'a' character as a homoglyph.
+"""
+
 
 class Tokenizer(ABC):
     API_VERSION: ClassVar[str]
@@ -30,6 +38,49 @@ class Tokenizer(ABC):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
+
+
+def word_tokenize_content(content: str, delimiters: str) -> TokenList:
+    """
+    Split a content into a list of word token.
+
+    As word tokenization is the base for most other tokenizers, this is provided as a utility
+    function for many tokenizers to use.
+
+    Args:
+        content (str): the content to tokenize.
+        delimiters (str): the delimiters to use for tokenization.
+    Returns:
+        TokenList: a list of word tokens.
+    """
+    for char in delimiters:
+        content = content.replace(char, " ")
+    return content.split()
+
+
+@lru_cache(maxsize=128)
+def get_homoglyph_delimiters(ascii_delimiters: str) -> str:
+    """
+    Generate a set of Unicode delimiter variants based on their ascii variants.
+    """
+
+    def decode_escaped(char_: str) -> str:
+        if char.startswith("\\u"):
+            return chr(int(char_, 16))
+        return char_
+
+    # Filter out delimiters that we don't want homoglyphs for
+    ascii_delimiters = "".join([d for d in ascii_delimiters if d not in HOMOGLYPH_IGNORE_DELIMITERS])
+
+    homoglyphs = hg.Homoglyphs()
+
+    unicode_delimiters = []
+    for char in ascii_delimiters:
+        for homoglyph in homoglyphs.get_combinations(char):
+            homoglyph = decode_escaped(homoglyph)
+            unicode_delimiters.append(homoglyph)
+
+    return "".join(set(unicode_delimiters))
 
 
 def tokenize_metadata(metadata: Metadata, value_tokenizer: Callable[[str], TokenList]) -> Generator[str]:
@@ -66,14 +117,6 @@ class WordTokenizer(Tokenizer):
 
     API_VERSION = "1.0"
 
-    HOMOGLYPH_IGNORE_DELIMITERS: str = "@"
-    """
-    The ascii delimiters to filter from the configured delimiters when generating homoglyphs.
-
-    Some delimiters generate homoglyphs that are unwanted because they're too common.
-    E.g. the delimiter '@' triggers the regular 'a' character as a homoglyph.
-    """
-
     async def __call__(self, content: str, metadata: Metadata) -> TokenList:
         """Tokenize content and metadata into words based on whitespace and punctuation."""
         metadata_tokens = self.tokenize_metadata(metadata)
@@ -83,11 +126,9 @@ class WordTokenizer(Tokenizer):
     def tokenize_content(self, content: str, ignore_delimiters: str = "") -> TokenList:
         """Generate a list of word tokens from the content string."""
         delimiters = "".join([d for d in self.settings.delimiters if d not in ignore_delimiters])
-        delimiters += self.get_homoglyph_delimiters(delimiters)
+        delimiters += get_homoglyph_delimiters(delimiters)
 
-        for char in delimiters:
-            content = content.replace(char, " ")
-        return content.split()
+        return word_tokenize_content(content, delimiters)
 
     def tokenize_metadata(self, metadata: Metadata) -> TokenList:
         """
@@ -100,27 +141,3 @@ class WordTokenizer(Tokenizer):
         """
         content_tokenizer = partial(self.tokenize_content, ignore_delimiters=METADATA_IGNORE_DELIMITERS)
         return list(tokenize_metadata(metadata, content_tokenizer))
-
-    @lru_cache(maxsize=128)
-    def get_homoglyph_delimiters(self, ascii_delimiters: str) -> str:
-        """
-        Generate a set of Unicode delimiter variants based on their ascii variants.
-        """
-
-        def decode_escaped(char: str) -> str:
-            if char.startswith("\\u"):
-                return chr(int(char, 16))
-            return char
-
-        # Filter out delimiters that we don't want homoglyphs for
-        ascii_delimiters = "".join([d for d in ascii_delimiters if d not in self.HOMOGLYPH_IGNORE_DELIMITERS])
-
-        homoglyphs = hg.Homoglyphs()
-
-        unicode_delimiters = []
-        for char in ascii_delimiters:
-            for homoglyph in homoglyphs.get_combinations(char):
-                homoglyph = decode_escaped(homoglyph)
-                unicode_delimiters.append(homoglyph)
-
-        return "".join(set(unicode_delimiters))

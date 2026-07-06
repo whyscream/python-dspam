@@ -3,7 +3,7 @@
 import pytest
 
 from dspam.settings import TokenizerSettings
-from dspam.tokenize import WordTokenizer
+from dspam.tokenize import HOMOGLYPH_IGNORE_DELIMITERS, WordTokenizer, get_homoglyph_delimiters
 
 
 @pytest.fixture
@@ -141,9 +141,9 @@ async def test_tokenize_unicode_content():
 
 async def test_unicode_delimiters_default():
     settings = TokenizerSettings()
-    homoglyph_delimiters = WordTokenizer(settings).get_homoglyph_delimiters(settings.delimiters)
+    homoglyph_delimiters = get_homoglyph_delimiters(settings.delimiters)
 
     for char in settings.delimiters:
-        if char in WordTokenizer.HOMOGLYPH_IGNORE_DELIMITERS:
+        if char in HOMOGLYPH_IGNORE_DELIMITERS:
             continue
         assert char in homoglyph_delimiters
