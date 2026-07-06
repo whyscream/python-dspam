@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import logging
+from functools import partial
 
 from dspam.settings import TokenizerSettings
-from dspam.tokenize import Tokenizer, WordTokenizer
+from dspam.tokenize import METADATA_IGNORE_DELIMITERS, Tokenizer, WordTokenizer, tokenize_metadata
 from dspam.types import Metadata, TokenList
 
 logger = logging.getLogger(__name__)
@@ -88,19 +89,8 @@ class OsbTokenizer(Tokenizer):
 
     def osb_tokenize_metadata(self, metadata: Metadata) -> TokenList:
         """Tokenize metadata into OSB tokens."""
-        metadata_tokens = []
-        for key, value in metadata.items():
-            if isinstance(value, str):
-                value = [value]
-
-            for item in value:
-                value_tokens = self.osb_tokenize_content(
-                    item, ignore_delimiters=self.word_tokenizer.METADATA_IGNORE_DELIMITERS
-                )
-                for value_token in value_tokens:
-                    metadata_tokens.append(f"{key}{self.word_tokenizer.METADATA_TOKEN_SEPARATOR}{value_token}")
-
-        return metadata_tokens
+        tokenizer = partial(self.osb_tokenize_content, ignore_delimiters=METADATA_IGNORE_DELIMITERS)
+        return list(tokenize_metadata(metadata, tokenizer))
 
     def get_word_tokens(self, content: str, ignore_delimiters: str = "") -> list[str]:
         """Tokenize content into word tokens."""

@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Generator
+from functools import partial
 from typing import ClassVar
 
 import homoglyphs_fork as hg  # type: ignore[import-untyped]
@@ -8,6 +10,12 @@ from anyio.functools import lru_cache
 
 from dspam.settings import TokenizerSettings
 from dspam.types import Metadata, TokenList
+
+METADATA_TOKEN_SEPARATOR: str = "*"  # noqa: S105
+"""The separator that is used between the metadata key and the tokenized values."""
+
+METADATA_IGNORE_DELIMITERS: str = ".:"
+"""The delimiters to filter from the default set when tokenizing metadata values."""
 
 
 class Tokenizer(ABC):
@@ -24,6 +32,31 @@ class Tokenizer(ABC):
         return f"{self.__class__.__name__}(API_VERSION={self.API_VERSION})"  # pragma: no cover
 
 
+def tokenize_metadata(metadata: Metadata, value_tokenizer: Callable[[str], TokenList]) -> Generator[str]:
+    """
+    Walk a metadata dictionary and tokenize it into a list of tokens.
+
+    For each metadata key and value, the value is tokenized using the provided `value_tokenizer` function.
+    Each token is then combined with the metadata key using the `METADATA_TOKEN_SEPARATOR` to create a metadata token.
+
+    Args:
+        metadata (Metadata): the metadata to tokenize.
+        value_tokenizer (Callable[[str], TokenList]): the callable used to tokenize the metadata values.
+    Returns:
+        Generator[str]: a list of tokens.
+    """
+
+    for key, values in metadata.items():
+        if isinstance(values, str):
+            values = [values]
+
+        for value in values:
+            value_tokens = value_tokenizer(value)
+            for value_token in value_tokens:
+                metadata_token = f"{key}{METADATA_TOKEN_SEPARATOR}{value_token}"
+                yield metadata_token
+
+
 class WordTokenizer(Tokenizer):
     """
     A simple tokenizer that splits the input text into words based on whitespace and punctuation.
@@ -32,12 +65,6 @@ class WordTokenizer(Tokenizer):
     """
 
     API_VERSION = "1.0"
-
-    METADATA_IGNORE_DELIMITERS: str = ".:"
-    """The delimiters to filter from the default set when tokenizing metadata values."""
-
-    METADATA_TOKEN_SEPARATOR: str = "*"  # noqa: S105
-    """The separator that is used when composing key-value tokens from metadata."""
 
     HOMOGLYPH_IGNORE_DELIMITERS: str = "@"
     """
@@ -66,26 +93,13 @@ class WordTokenizer(Tokenizer):
         """
         Generate a list of tokens from the metadata dictionary.
 
-        The metadata key is combined with word tokens from the metadata values to add key-value context in the result.
-        Word tokenization for metadata ignores a few delimiters to improve handling of email headers, so domain names
-        and ip addresses are preserved.
-
         Args:
             metadata (Metadata): the metadata to tokenize.
         Returns:
             TokenList: a list of tokens generated from the metadata dictionary.
         """
-        metadata_tokens = []
-        for key, value in metadata.items():
-            if isinstance(value, str):
-                value = [value]
-
-            for item in value:
-                value_tokens = self.tokenize_content(item, ignore_delimiters=self.METADATA_IGNORE_DELIMITERS)
-                for value_token in value_tokens:
-                    metadata_tokens.append(f"{key}{self.METADATA_TOKEN_SEPARATOR}{value_token}")
-
-        return metadata_tokens
+        content_tokenizer = partial(self.tokenize_content, ignore_delimiters=METADATA_IGNORE_DELIMITERS)
+        return list(tokenize_metadata(metadata, content_tokenizer))
 
     @lru_cache(maxsize=128)
     def get_homoglyph_delimiters(self, ascii_delimiters: str) -> str:
